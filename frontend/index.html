@@ -274,14 +274,16 @@
                 container.innerHTML += '<div class="card">No data available. Click "Generate New Pulse" to begin.</div>';
                 return;
             }
-            Object.entries(clusters).sort((a,b) => b[1].volume - a[1].volume).slice(0, 3).forEach(([theme, data]) => {
+            // Show ALL themes, sorted by volume
+            Object.entries(clusters).sort((a,b) => b[1].volume - a[1].volume).forEach(([theme, data], index) => {
+                const isTop3 = index < 3;
                 container.innerHTML += `
-                    <div class="card">
+                    <div class="card" style="${isTop3 ? 'border-left: 4px solid var(--brand-cyan);' : 'opacity: 0.8;'}">
                         <div class="theme-header">
-                            <h3 style="margin:0; font-size: 20px;">${theme}</h3>
-                            <span class="badge">Score: ${data.average_rating} / 5</span>
+                            <h3 style="margin:0; font-size: 18px;">${isTop3 ? '🔴' : '🟡'} ${theme}</h3>
+                            <span class="badge">${data.average_rating} / 5 ★</span>
                         </div>
-                        <div style="font-size: 13px; color: #999; margin-bottom: 20px;">Volume: ${data.volume} reviews</div>
+                        <div style="font-size: 13px; color: #999; margin-bottom: 15px;">${data.volume} reviews this week${isTop3 ? ' · <strong style="color:#0084A3;">Top Priority</strong>' : ''}</div>
                         ${(data.representative_quotes || []).slice(0, 2).map(q => `<div class="quote">"${q}"</div>`).join('')}
                     </div>`;
             });
@@ -304,11 +306,17 @@
             }
             container.innerHTML = emails.map(draft => {
                 const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`;
+                const pdfBtn = draft.download_link
+                    ? `<a href="${draft.download_link}" target="_blank" rel="noopener noreferrer" class="btn-send" style="background: #636E72; margin-left: 8px;">📄 PDF Note</a>`
+                    : '';
                 return `
                 <div class="card stakeholder-card">
-                    <h4 style="margin: 0 0 10px; font-size: 16px;">${draft.role}</h4>
+                    <h4 style="margin: 0 0 8px; font-size: 16px;">${draft.role}</h4>
                     <p style="font-size: 12px; color: #636E72; margin-bottom: 15px;">${draft.subject}</p>
-                    <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer" class="btn-send">Open in Gmail &rarr;</a>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer" class="btn-send">Open in Gmail →</a>
+                        ${pdfBtn}
+                    </div>
                 </div>`;
             }).join('');
         }

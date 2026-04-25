@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import datetime
@@ -84,6 +85,19 @@ async def get_latest_results():
 async def health_check():
     return {"status": "ok", "version": "1.0.0", "timestamp": datetime.datetime.now().isoformat()}
 
+@app.get("/mcp/download-note/{filename}")
+async def download_note(filename: str):
+    from config.settings import OUTPUT_DIR
+    file_path = OUTPUT_DIR / filename
+    if not file_path.exists() or not filename.endswith(".pdf"):
+        raise HTTPException(status_code=404, detail="PDF note not found. Please run the pulse first.")
+    return FileResponse(
+        path=str(file_path),
+        media_type="application/pdf",
+        filename=filename,
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
 
 @app.post("/mcp/run-weekly-pulse")
 def run_weekly_pulse(request: WeeklyPulseRequest):
@@ -95,7 +109,7 @@ def run_weekly_pulse(request: WeeklyPulseRequest):
         from tools.theme_clustering import run_clustering_pipeline
         from tools.insight_generation import run_insight_generation
         from tools.email_draft import run_email_drafting
-        from tools.report_html import generate_report_html
+        from tools.pdf_note import generate_all_pdf_notes
         from config.settings import OUTPUT_DIR, APP_NAME
         import json
 
@@ -111,24 +125,9 @@ def run_weekly_pulse(request: WeeklyPulseRequest):
         logger.info("Executing Phase 4: Report Generation...")
         run_insight_generation()
         
-        # Phase 5: Email Drafting
-        logger.info("Executing Phase 5: Email Drafting...")
+        # Phase 5: Email Drafting + PDF Note Generation
+        logger.info("Executing Phase 5: Email Drafting + PDF Note Generation...")
         run_email_drafting()
-
-        # Phase 6: Interactive HTML Dashboard Synthesis
-        today_str = datetime.datetime.now().strftime("%Y%m%d")
-        input_file = OUTPUT_DIR / "clustered_insights.json"
-        emails_file = OUTPUT_DIR / f"Kuvera_stakeholder_emails_{today_str}.json"
-        
-        if input_file.exists() and emails_file.exists():
-            with open(input_file, 'r', encoding='utf-8') as f:
-                insights_data = json.load(f)
-            with open(emails_file, 'r', encoding='utf-8') as f:
-                email_drafts = json.load(f)
-                
-            html_output = OUTPUT_DIR / f"{APP_NAME}_dashboard_{today_str}.html"
-            generate_report_html(insights_data, email_drafts, str(html_output))
-            logger.info(f"🚀 Interactive Dashboard created: {html_output}")
         
         logger.info("✅ Full Weekly Pulse Cycle Completed Successfully.")
         return {
