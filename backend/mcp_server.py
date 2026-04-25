@@ -5,16 +5,20 @@ from typing import List, Optional
 import datetime
 import logging
 from config.settings import LOG_DIR, LOG_LEVEL
-import sys
-import six
-import urllib3
-
 # Monkey-patch to fix app-store-scraper compatibility with urllib3 v2+ on Render
-if not hasattr(urllib3, 'packages'):
-    urllib3.packages = type('packages', (), {'six': six})()
-    sys.modules['urllib3.packages'] = urllib3.packages
-    sys.modules['urllib3.packages.six'] = six
-    sys.modules['urllib3.packages.six.moves'] = six.moves
+try:
+    import sys
+    import six
+    import urllib3
+    if not hasattr(urllib3, 'packages'):
+        urllib3.packages = type('packages', (), {'six': six})()
+        sys.modules['urllib3.packages'] = urllib3.packages
+        sys.modules['urllib3.packages.six'] = six
+        sys.modules['urllib3.packages.six.moves'] = six.moves
+except ImportError as e:
+    print(f"Warning: Missing dependencies during startup: {e}")
+except Exception as e:
+    print(f"Warning: Monkey-patch failed during startup: {e}")
 
 # Configure logging
 handlers = [logging.StreamHandler()]
