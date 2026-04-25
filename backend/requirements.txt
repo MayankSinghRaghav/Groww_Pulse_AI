@@ -3,8 +3,8 @@ uvicorn
 pydantic
 python-dotenv
 httpx
-requests==2.31.0
-urllib3==1.26.18
+requests
+urllib3
 beautifulsoup4
 google-play-scraper
 app-store-scraper
