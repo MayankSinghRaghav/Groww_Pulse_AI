@@ -186,7 +186,7 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
         pdf.set_font("Helvetica", "B", 14)
         pdf.set_text_color(*BRAND_DARK_GREY)
         pdf.set_xy(12, 38)
-        pdf.cell(0, 8, f"Weekly Pulse Note — {role}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.cell(0, 8, f"Weekly Pulse Note - {role}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         pdf.set_font("Helvetica", "I", 9)
         pdf.set_text_color(*TEXT_MUTED)
         pdf.cell(0, 5, ctx["tagline"], new_x=XPos.LMARGIN, new_y=YPos.NEXT)
@@ -198,9 +198,9 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
         pdf.set_font("Helvetica", "", 9)
         pdf.set_text_color(*WHITE)
         pdf.set_xy(16, pdf.get_y() + 2)
-        pdf.cell(60, 7, f"📊  {total_reviews} Reviews Analyzed")
-        pdf.cell(60, 7, f"📅  Week of {datetime.datetime.now().strftime('%B %d, %Y')}")
-        pdf.cell(60, 7, f"👤  For: {role}", align="R")
+        pdf.cell(60, 7, f"  {total_reviews} Reviews Analyzed")
+        pdf.cell(60, 7, f"   Week of {datetime.datetime.now().strftime('%B %d, %Y')}")
+        pdf.cell(60, 7, f"   For: {role}", align="R")
         pdf.ln(14)
 
         # Intro
