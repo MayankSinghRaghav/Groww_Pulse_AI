@@ -302,12 +302,15 @@
                 container.innerHTML = '<div class="card" style="text-align:center; color:#999;">Run pulse to generate drafts.</div>';
                 return;
             }
-            container.innerHTML = emails.map(draft => `
+            container.innerHTML = emails.map(draft => {
+                const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`;
+                return `
                 <div class="card stakeholder-card">
                     <h4 style="margin: 0 0 10px; font-size: 16px;">${draft.role}</h4>
                     <p style="font-size: 12px; color: #636E72; margin-bottom: 15px;">${draft.subject}</p>
-                    <a href="mailto:?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}" class="btn-send">Send Draft &rarr;</a>
-                </div>`).join('');
+                    <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer" class="btn-send">Open in Gmail &rarr;</a>
+                </div>`;
+            }).join('');
         }
         fetchPulse();
     </script>
