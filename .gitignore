@@ -1,0 +1,9 @@
+backend/.env
+.env
+**/__pycache__
+backend/data/processed/*.json
+backend/data/processed/*.csv
+backend/data/logs/*.log
+backend/data/outputs/*.pdf
+backend/data/outputs/*.json
+backend/data/outputs/*.html
