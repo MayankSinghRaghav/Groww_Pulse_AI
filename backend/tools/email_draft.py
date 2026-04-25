@@ -5,128 +5,91 @@ import os
 from groq import Groq
 from typing import List, Dict, Any
 from config.settings import OUTPUT_DIR, APP_NAME, MODEL_NAME
-from config.prompts import SYSTEM_PROMPT_EMAIL, TONE_MAP
+from config.prompts import TONE_MAP
 
 logger = logging.getLogger("email_draft")
 
+# Role-specific instructions for what each audience cares about
+ROLE_CONTEXT = {
+    "Product Team": {
+        "focus": "technical root causes, sprint priorities, and bug fixes",
+        "what_they_need": "specific feature areas to investigate, prioritized by severity and volume, with reproduction steps or patterns from user quotes",
+        "format_hint": "Use bullet points for action items. Be precise about which screen/flow is broken. Suggest sprint backlog items."
+    },
+    "Support Team": {
+        "focus": "how to handle user escalations and common complaints this week",
+        "what_they_need": "scripts or talking points for the top complaints, so agents can empathize and respond correctly when users call in",
+        "format_hint": "Use a warm, empathetic tone. Provide 2-3 agent talking points per theme. Focus on user frustration patterns."
+    },
+    "Leadership": {
+        "focus": "business impact, retention risk, and strategic decisions needed",
+        "what_they_need": "a high-level view of user sentiment health, which themes pose the biggest retention risk, and what one strategic decision would move the needle",
+        "format_hint": "Be concise and executive. No jargon. Use % or numbers where possible. End with a single recommended strategic priority."
+    }
+}
 
-def _build_note_prompt(role: str, tone: str, insights_data: dict) -> str:
-    """Build a structured prompt using real insights data."""
+
+def _build_role_specific_prompt(role: str, tone: str, insights_data: dict) -> str:
+    """Build a role-specific prompt that yields genuinely different emails."""
     local_clusters = insights_data.get("local_clusters", {})
     action_ideas = insights_data.get("action_ideas", [])
     week_date = datetime.datetime.now().strftime("%B %d, %Y")
 
-    # Sort themes by volume (descending) and take top 3
+    # Sort by volume and take top 3
     sorted_themes = sorted(local_clusters.items(), key=lambda x: x[1].get("volume", 0), reverse=True)[:3]
-
-    # Collect top 3 quotes across all themes
-    all_quotes = []
-    for _, data in sorted_themes:
-        all_quotes.extend(data.get("representative_quotes", []))
-    all_quotes = [q for q in all_quotes if q and len(q.strip()) > 10][:3]
-    while len(all_quotes) < 3:
-        all_quotes.append("Users appreciate the clean interface and fast performance.")
-
-    # Pad themes if fewer than 3
-    while len(sorted_themes) < 3:
-        sorted_themes.append(("General Feedback", {"volume": 0, "average_rating": 0, "representative_quotes": []}))
-
     total_reviews = sum(d.get("volume", 0) for _, d in local_clusters.items())
 
-    # Build theme summaries (short 1-line per theme)
-    def theme_summary(name, data):
-        rating = data.get("average_rating", 0)
-        if rating < 2.5:
-            return f"Critical pain point — users are highly frustrated with {name.lower()}."
-        elif rating < 3.5:
-            return f"Mixed sentiment — some friction in the {name.lower()} experience."
-        else:
-            return f"Positive signal — users are largely satisfied with {name.lower()}."
+    # Build raw data block for the AI
+    themes_block = ""
+    all_quotes = []
+    for name, data in sorted_themes:
+        themes_block += f"\n• {name}: {data.get('volume', 0)} reviews, avg rating {data.get('average_rating', 0)}/5\n"
+        quotes = data.get("representative_quotes", [])
+        if quotes:
+            themes_block += f"  Sample quotes: {' | '.join(quotes[:2])}\n"
+            all_quotes.extend(quotes[:2])
 
-    # Pad action ideas
     while len(action_ideas) < 3:
-        action_ideas.append("Review and prioritize top user-reported issues in the next sprint.")
-    actions = action_ideas[:3]
+        action_ideas.append("Review top-reported issues in the next sprint.")
+    actions_block = "\n".join([f"{i+1}. {a}" for i, a in enumerate(action_ideas[:3])])
 
-    t1_name, t1_data = sorted_themes[0]
-    t2_name, t2_data = sorted_themes[1]
-    t3_name, t3_data = sorted_themes[2]
+    ctx = ROLE_CONTEXT[role]
 
-    prompt = SYSTEM_PROMPT_EMAIL.format(
-        role=role,
-        tone=tone,
-        week_date=week_date,
-        total_reviews=total_reviews,
-        theme1_name=t1_name,
-        theme1_volume=t1_data.get("volume", 0),
-        theme1_rating=t1_data.get("average_rating", 0),
-        theme1_summary=theme_summary(t1_name, t1_data),
-        theme2_name=t2_name,
-        theme2_volume=t2_data.get("volume", 0),
-        theme2_rating=t2_data.get("average_rating", 0),
-        theme2_summary=theme_summary(t2_name, t2_data),
-        theme3_name=t3_name,
-        theme3_volume=t3_data.get("volume", 0),
-        theme3_rating=t3_data.get("average_rating", 0),
-        theme3_summary=theme_summary(t3_name, t3_data),
-        quote1=all_quotes[0],
-        quote2=all_quotes[1],
-        quote3=all_quotes[2],
-        action1=actions[0],
-        action2=actions[1],
-        action3=actions[2],
-    )
+    prompt = f"""You are a Product Communications Lead at Kuvera by CRED.
+Write a weekly pulse briefing email for the {role} audience. Tone: {tone}.
+
+YOUR AUDIENCE CARES ABOUT: {ctx['focus']}
+WHAT THEY NEED FROM THIS EMAIL: {ctx['what_they_need']}
+FORMAT GUIDANCE: {ctx['format_hint']}
+
+--- RAW DATA (Week of {week_date}) ---
+Total reviews analyzed: {total_reviews} (Google Play)
+Top 3 themes this week:
+{themes_block}
+Suggested action ideas:
+{actions_block}
+
+--- YOUR TASK ---
+Write the complete email body (no placeholder text). 
+Start with: "Subject: [Kuvera Weekly Pulse] {week_date} — {role} Briefing"
+Then write the email body tailored specifically for the {role}.
+Include exactly:
+- Top 3 themes reframed for this audience's perspective
+- 3 real user quotes (pick the most relevant ones for this audience)
+- 3 action items written specifically for what THIS team can do
+End with: "— Kuvera Pulse AI Engine"
+"""
     return prompt
 
 
-def draft_email_variants(insights_data: dict) -> List[Dict[str, Any]]:
-    """
-    Generates 3 email drafts (one-page notes) for different stakeholder roles.
-    """
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        logger.warning("GROQ_API_KEY not found. Generating structured drafts without AI.")
-        return _generate_fallback_drafts(insights_data)
-
-    client = Groq(api_key=api_key)
-    email_drafts = []
-
-    for role, tone in TONE_MAP.items():
-        logger.info(f"Drafting one-page note for {role}...")
-        prompt = _build_note_prompt(role, tone, insights_data)
-
-        try:
-            chat_completion = client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model=MODEL_NAME,
-                temperature=0.4,
-                max_tokens=1000,
-            )
-            body = chat_completion.choices[0].message.content
-            week_date = datetime.datetime.now().strftime("%B %d, %Y")
-            email_drafts.append({
-                "role": role,
-                "subject": f"[Kuvera Weekly Pulse] {week_date} — {role} Briefing",
-                "body": body,
-                "timestamp": datetime.datetime.now().isoformat()
-            })
-        except Exception as e:
-            logger.error(f"Failed to draft email for {role}: {e}")
-            # Fall back to structured note without AI
-            email_drafts.extend(_generate_fallback_drafts(insights_data, roles=[role]))
-
-    return email_drafts
-
-
-def _generate_fallback_drafts(insights_data: dict, roles=None) -> List[Dict[str, Any]]:
-    """Generate a well-structured note without AI if Groq fails."""
+def _generate_fallback_drafts(insights_data: dict, roles: list = None) -> List[Dict[str, Any]]:
+    """Fallback: structured notes without AI when Groq is unavailable."""
     if roles is None:
         roles = list(TONE_MAP.keys())
 
     local_clusters = insights_data.get("local_clusters", {})
     action_ideas = insights_data.get("action_ideas", [])
     week_date = datetime.datetime.now().strftime("%B %d, %Y")
-
     sorted_themes = sorted(local_clusters.items(), key=lambda x: x[1].get("volume", 0), reverse=True)[:3]
     total_reviews = sum(d.get("volume", 0) for _, d in local_clusters.items())
 
@@ -136,43 +99,38 @@ def _generate_fallback_drafts(insights_data: dict, roles=None) -> List[Dict[str,
     all_quotes = [q for q in all_quotes if q and len(q.strip()) > 10][:3]
     while len(all_quotes) < 3:
         all_quotes.append("Users appreciate a smooth investment experience.")
-
     while len(action_ideas) < 3:
         action_ideas.append("Review and prioritize top user-reported issues.")
-    actions = action_ideas[:3]
+
+    role_openers = {
+        "Product Team": f"Hi team,\n\nThis week's review data flags {sorted_themes[0][0] if sorted_themes else 'key areas'} as the highest-priority engineering concern. Here's what needs to go into the backlog:",
+        "Support Team": f"Hi Support team,\n\nHere are the top themes users are calling in about this week. Use these talking points when handling escalations:",
+        "Leadership": f"Hi,\n\nThis week's Kuvera app reviews ({total_reviews} analyzed) show the following strategic signals worth your attention:"
+    }
 
     drafts = []
     for role in roles:
-        theme_section = ""
+        theme_lines = ""
         for i, (name, data) in enumerate(sorted_themes, 1):
-            theme_section += f"{i}. {name} ({data.get('volume',0)} reviews, Avg Rating: {data.get('average_rating',0)}/5)\n\n"
+            theme_lines += f"{i}. {name} — {data.get('volume', 0)} reviews, Avg: {data.get('average_rating', 0)}/5\n"
 
-        body = f"""KUVERA WEEKLY PULSE NOTE
-Week of {week_date} | For: {role}
-{'—' * 40}
+        body = f"""Subject: [Kuvera Weekly Pulse] {week_date} — {role} Briefing
 
-TOP 3 FEEDBACK THEMES THIS WEEK
-(from {total_reviews} Google Play reviews analyzed)
+{role_openers.get(role, 'Hi,')}
 
-{theme_section}
-{'—' * 40}
-3 USER VOICES THIS WEEK
+TOP 3 THEMES
+{theme_lines}
+USER VOICES
+• "{all_quotes[0]}"
+• "{all_quotes[1]}"
+• "{all_quotes[2]}"
 
-"{all_quotes[0]}"
+ACTIONS FOR {role.upper()}
+1. {action_ideas[0]}
+2. {action_ideas[1]}
+3. {action_ideas[2]}
 
-"{all_quotes[1]}"
-
-"{all_quotes[2]}"
-
-{'—' * 40}
-3 RECOMMENDED ACTIONS
-
-1. {actions[0]}
-2. {actions[1]}
-3. {actions[2]}
-
-{'—' * 40}
-Generated by Kuvera Pulse AI Engine | Confidential"""
+— Kuvera Pulse AI Engine"""
 
         drafts.append({
             "role": role,
@@ -181,6 +139,41 @@ Generated by Kuvera Pulse AI Engine | Confidential"""
             "timestamp": datetime.datetime.now().isoformat()
         })
     return drafts
+
+
+def draft_email_variants(insights_data: dict) -> List[Dict[str, Any]]:
+    """Generates 3 role-specific email drafts using Groq."""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        logger.warning("GROQ_API_KEY not found. Using fallback structured drafts.")
+        return _generate_fallback_drafts(insights_data)
+
+    client = Groq(api_key=api_key)
+    email_drafts = []
+
+    for role, tone in TONE_MAP.items():
+        logger.info(f"Drafting role-specific note for {role}...")
+        prompt = _build_role_specific_prompt(role, tone, insights_data)
+
+        try:
+            chat_completion = client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=MODEL_NAME,
+                temperature=0.6,
+                max_tokens=1200,
+            )
+            week_date = datetime.datetime.now().strftime("%B %d, %Y")
+            email_drafts.append({
+                "role": role,
+                "subject": f"[Kuvera Weekly Pulse] {week_date} — {role} Briefing",
+                "body": chat_completion.choices[0].message.content,
+                "timestamp": datetime.datetime.now().isoformat()
+            })
+        except Exception as e:
+            logger.error(f"Failed to draft email for {role}: {e}")
+            email_drafts.extend(_generate_fallback_drafts(insights_data, roles=[role]))
+
+    return email_drafts
 
 
 def run_email_drafting():
