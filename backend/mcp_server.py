@@ -23,12 +23,53 @@ logging.basicConfig(
 )
 logger = logging.getLogger("mcp_server")
 
+from fastapi.middleware.cors import CORSMiddleware
+import json
+
 app = FastAPI(title="Kuvera Weekly Pulse MCP Server", version="1.0.0")
+
+# Enable CORS for Vercel deployment
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In production, replace with your Vercel URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class WeeklyPulseRequest(BaseModel):
     app_name: str = "Kuvera"
     weeks: int = 8
     recipient_role: Optional[str] = None
+
+@app.get("/mcp/latest-results")
+async def get_latest_results():
+    from config.settings import OUTPUT_DIR, APP_NAME
+    
+    try:
+        insights_path = OUTPUT_DIR / "clustered_insights.json"
+        today_str = datetime.datetime.now().strftime("%Y%m%d")
+        emails_path = OUTPUT_DIR / f"{APP_NAME}_stakeholder_emails_{today_str}.json"
+        
+        results = {
+            "insights": {},
+            "emails": [],
+            "last_updated": None
+        }
+        
+        if insights_path.exists():
+            with open(insights_path, 'r', encoding='utf-8') as f:
+                results["insights"] = json.load(f)
+                results["last_updated"] = datetime.datetime.fromtimestamp(insights_path.stat().st_mtime).isoformat()
+        
+        if emails_path.exists():
+            with open(emails_path, 'r', encoding='utf-8') as f:
+                results["emails"] = json.load(f)
+                
+        return results
+    except Exception as e:
+        logger.error(f"Error fetching latest results: {e}")
+        return {"error": str(e)}
 
 @app.get("/health")
 async def health_check():

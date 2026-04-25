@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -174,68 +173,105 @@
 <body>
     <header>
         <div class="logo">KUVERA <span>PULSE</span></div>
-        <div style="font-size: 14px; opacity: 0.6; font-weight: 300;">Insights Engine | April 25, 2026</div>
+        <div id="status-bar" style="font-size: 13px; margin-top: 10px; opacity: 0.8; font-weight: 300;">
+            <span id="connection-status" style="color: #FFCC00;">●</span> Connecting to Insights Engine...
+        </div>
     </header>
     
     <div class="container">
         <div class="grid">
-            <!-- Main Content: Top 3 Themes -->
-            <div>
+            <div id="themes-container">
                 <div class="section-title">Critical Feedback Themes</div>
-                
+                <div class="card" style="text-align: center; color: #999;">
+                    Syncing with AI backend...
+                </div>
             </div>
 
-            <!-- Sidebar: Action Ideas & Drafts -->
             <div>
                 <div class="section-title">Action Roadmap</div>
-                <div class="action-card">
-                    
-                    <div class="action-item">Based on this week's app review data, here are 3 concrete, high-level action ideas for the product team:</div>
-                    
-                    <div class="action-item">1. **Simplify Onboarding Process**: Many users have reported difficulty in navigating the app's initial setup and investment process. To address this, the product team can redesign the onboarding flow to make it more intuitive and user-friendly, reducing the number of steps required to start investing and providing clear, concise guidance throughout the process.</div>
-                    
-                    <div class="action-item">2. **Enhance Portfolio Tracking and Analytics**: Several users have requested more detailed and customizable portfolio tracking features, including real-time updates and more granular analytics. The product team can prioritize the development of advanced portfolio tracking tools, allowing users to better monitor their investments and make more informed decisions.</div>
-                    
+                <div id="actions-container" class="action-card">
+                    <div class="action-item">Analyzing roadmap...</div>
                 </div>
 
                 <div class="section-title">Stakeholder Drafts</div>
-                
-                <div class="card stakeholder-card">
-                    <h4 style="margin: 0 0 10px;">Product Team</h4>
-                    <p style="font-size: 13px; color: #636E72; margin-bottom: 20px; line-height: 1.4;">
-                        [Kuvera] Weekly Review Pulse - Product Team Focus
-                    </p>
-                    <a href="mailto:?subject=%5BKuvera%5D%20Weekly%20Review%20Pulse%20-%20Product%20Team%20Focus&body=Subject%3A%20Weekly%20App%20Review%20Summary%20and%20Action%20Items%20-%20Week%20of%20%5BCurrent%20Week%5D%0A%0ADear%20Product%20Team%2C%0A%0AI%20am%20writing%20to%20summarize%20the%20key%20findings%20from%20this%20week%27s%20app%20reviews%2C%20highlighting%20areas%20of%20improvement%20and%20outstanding%20issues%20that%20require%20our%20attention.%20As%20we%20continue%20to%20refine%20and%20enhance%20our%20product%2C%20it%20is%20essential%20that%20we%20prioritize%20and%20address%20user%20feedback%20in%20a%20timely%20and%20effective%20manner.%0A%0AThis%20week%27s%20review%20analysis%20reveals%20a%20mix%20of%20positive%20and%20constructive%20feedback%2C%20with%20users%20praising%20our%20recent%20feature%20updates%20while%20also%20reporting%20some%20technical%20issues%20and%20usability%20concerns.%20The%20attached%20PDF%20report%20%28App%20Review%20Summary%20-%20Week%20of%20%5BCurrent%20Week%5D.pdf%29%20provides%20a%20detailed%20breakdown%20of%20the%20review%20data%2C%20including%20metrics%20on%20user%20satisfaction%2C%20bug%20reports%2C%20and%20feature%20requests.%0A%0AKey%20takeaways%20from%20the%20report%20include%3A%0A%0A%2A%20An%20increase%20in%20positive%20reviews%20following%20the%20latest%20feature%20release%2C%20indicating%20a%20positive%20user%20response%20to%20our%20development%20efforts.%0A%2A%20A%20moderate%20number%20of%20bug%20reports%20related%20to%20performance%20and%20stability%2C%20which%20we%20will%20need%20to%20investigate%20and%20resolve%20promptly.%0A%2A%20User%20feedback%20highlighting%20areas%20for%20improvement%20in%20our%20onboarding%20process%20and%20in-app%20guidance%2C%20which%20we%20should%20prioritize%20for%20upcoming%20development%20cycles.%0A%0ATo%20address%20these%20findings%2C%20I%20recommend%20the%20following%20action%20items%3A%0A%0A1.%20Conduct%20a%20thorough%20review%20of%20the%20reported%20bugs%20and%20prioritize%20fixes%20for%20the%20upcoming%20sprint.%0A2.%20Schedule%20a%20discussion%20with%20the%20UX%20team%20to%20explore%20enhancements%20to%20our%20onboarding%20process%20and%20in-app%20guidance.%0A3.%20Continue%20to%20monitor%20user%20feedback%20and%20review%20metrics%20to%20ensure%20we%20are%20meeting%20our%20quality%20and%20satisfaction%20targets.%0A%0APlease%20review%20the%20attached%20report%20and%20come%20prepared%20to%20discuss%20these%20action%20items%20and%20any%20additional%20insights%20you%20may%20have%20during%20our%20next%20team%20meeting.%20If%20you%20have%20any%20questions%20or%20concerns%20before%20then%2C%20please%20do%20not%20hesitate%20to%20reach%20out.%0A%0AThank%20you%20for%20your%20attention%20to%20this%20matter%2C%20and%20I%20look%20forward%20to%20collaborating%20with%20you%20to%20drive%20further%20product%20improvements.%0A%0ABest%20regards%2C%0A%0A%5BYour%20Name%5D%0AProduct%20Communications%20Lead%0A%5BCompany%20Name%5D" class="btn-send">
-                        Send to Gmail &rarr;
-                    </a>
+                <div id="drafts-container">
+                    <div class="card" style="text-align: center; color: #999; font-size: 14px;">
+                        Preparing stakeholder briefings...
+                    </div>
                 </div>
-                
-                <div class="card stakeholder-card">
-                    <h4 style="margin: 0 0 10px;">Support Team</h4>
-                    <p style="font-size: 13px; color: #636E72; margin-bottom: 20px; line-height: 1.4;">
-                        [Kuvera] Weekly Review Pulse - Support Team Focus
-                    </p>
-                    <a href="mailto:?subject=%5BKuvera%5D%20Weekly%20Review%20Pulse%20-%20Support%20Team%20Focus&body=Subject%3A%20Weekly%20App%20Review%20Summary%20and%20Key%20Takeaways%0A%0ADear%20Support%20Team%2C%0A%0AI%20hope%20this%20email%20finds%20you%20well.%20As%20we%20continue%20to%20prioritize%20our%20users%27%20experience%20and%20feedback%2C%20I%20wanted%20to%20take%20a%20moment%20to%20summarize%20this%20week%27s%20app%20reviews%20and%20highlight%20some%20key%20trends%20that%20may%20impact%20our%20support%20efforts.%0A%0AThis%20week%2C%20we%27ve%20seen%20a%20mix%20of%20positive%20and%20constructive%20feedback%20from%20our%20users.%20While%20many%20have%20praised%20our%20app%27s%20ease%20of%20use%20and%20features%2C%20some%20have%20reported%20issues%20with%20navigation%20and%20performance.%20I%20understand%20that%20these%20concerns%20can%20be%20frustrating%20for%20both%20our%20users%20and%20our%20support%20team%2C%20and%20I%20want%20to%20assure%20you%20that%20we%27re%20taking%20all%20feedback%20seriously%20and%20working%20diligently%20to%20address%20these%20issues.%0A%0ATo%20provide%20a%20more%20detailed%20overview%2C%20I%27ve%20attached%20a%20PDF%20report%20that%20summarizes%20this%20week%27s%20app%20reviews%2C%20including%20user%20comments%2C%20ratings%2C%20and%20trends.%20This%20report%20will%20give%20you%20a%20better%20understanding%20of%20the%20types%20of%20issues%20our%20users%20are%20experiencing%20and%20help%20you%20prepare%20for%20potential%20support%20requests.%0A%0AI%20want%20to%20thank%20each%20of%20you%20for%20your%20hard%20work%20and%20dedication%20to%20providing%20exceptional%20support%20to%20our%20users.%20Your%20efforts%20are%20crucial%20in%20ensuring%20that%20our%20users%20have%20a%20positive%20experience%20with%20our%20app%2C%20and%20I%20appreciate%20your%20commitment%20to%20resolving%20issues%20promptly%20and%20empathetically.%0A%0AIf%20you%20have%20any%20questions%20or%20concerns%20after%20reviewing%20the%20attached%20report%2C%20please%20don%27t%20hesitate%20to%20reach%20out%20to%20me%20or%20your%20team%20lead.%20We%27re%20always%20here%20to%20support%20you%20and%20provide%20any%20necessary%20resources%20to%20help%20you%20succeed%20in%20your%20roles.%0A%0AThank%20you%20again%20for%20your%20tireless%20efforts%2C%20and%20let%27s%20work%20together%20to%20continue%20delivering%20an%20outstanding%20user%20experience.%0A%0ABest%20regards%2C%0A%0A%5BYour%20Name%5D%0AProduct%20Communications%20Lead%0A%0A%5BAttach%20PDF%20report%5D" class="btn-send">
-                        Send to Gmail &rarr;
-                    </a>
-                </div>
-                
-                <div class="card stakeholder-card">
-                    <h4 style="margin: 0 0 10px;">Leadership</h4>
-                    <p style="font-size: 13px; color: #636E72; margin-bottom: 20px; line-height: 1.4;">
-                        [Kuvera] Weekly Review Pulse - Leadership Focus
-                    </p>
-                    <a href="mailto:?subject=%5BKuvera%5D%20Weekly%20Review%20Pulse%20-%20Leadership%20Focus&body=Subject%3A%20Weekly%20App%20Review%20Summary%20and%20Key%20Insights%0A%0ADear%20Leadership%20Team%2C%0A%0AI%20am%20writing%20to%20provide%20a%20summary%20of%20this%20week%27s%20app%20reviews%2C%20highlighting%20key%20trends%20and%20areas%20for%20improvement.%20Our%20analysis%20indicates%20a%20positive%20overall%20sentiment%2C%20with%20users%20praising%20the%20app%27s%20user%20experience%20and%20features.%0A%0AThe%20attached%20PDF%20report%20provides%20a%20detailed%20breakdown%20of%20the%20review%20data%2C%20including%20metrics%20on%20user%20satisfaction%2C%20feature%20adoption%2C%20and%20feedback%20themes.%20Key%20highlights%20include%3A%0A%0A%2A%20A%204.5-star%20average%20rating%20across%20all%20app%20stores%0A%2A%20Increased%20praise%20for%20our%20recently%20launched%20features%2C%20with%20a%2025%25%20increase%20in%20positive%20mentions%0A%2A%20Identification%20of%20areas%20for%20improvement%2C%20including%20bug%20fixes%20and%20performance%20optimization%0A%0AThese%20insights%20will%20inform%20our%20product%20roadmap%20and%20prioritize%20future%20development%20efforts.%20I%20recommend%20reviewing%20the%20attached%20report%20for%20a%20comprehensive%20understanding%20of%20our%20app%27s%20performance%20and%20user%20feedback.%0A%0AIf%20you%20have%20any%20questions%20or%20would%20like%20to%20discuss%20these%20findings%20further%2C%20please%20do%20not%20hesitate%20to%20reach%20out.%0A%0ABest%20regards%2C%0A%0A%5BYour%20Name%5D%0AProduct%20Communications%20Lead" class="btn-send">
-                        Send to Gmail &rarr;
-                    </a>
-                </div>
-                
             </div>
+        </div>
+
+        <div class="section-title">Technical Pulse Data (JSON)</div>
+        <div class="card" style="background: #1E1E1E; color: #D4D4D4; font-family: 'Courier New', Courier, monospace; padding: 25px; overflow-x: auto; font-size: 12px; border: none;">
+            <pre id="json-raw">{}</pre>
         </div>
     </div>
     
-    <footer>
-        PROPRIETARY REPORT BY KUVERA BY CRED
-    </footer>
+    <footer>PROPRIETARY REPORT BY KUVERA BY CRED</footer>
+
+    <script>
+        const DEFAULT_BACKEND = "https://kuvera-pulse-backend.onrender.com"; 
+        const params = new URLSearchParams(window.location.search);
+        const BACKEND_URL = params.get('backend') || DEFAULT_BACKEND;
+
+        async function fetchPulse() {
+            const statusEl = document.getElementById('connection-status');
+            const statusText = document.getElementById('status-bar');
+            try {
+                const response = await fetch(`${BACKEND_URL}/mcp/latest-results`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                
+                statusEl.style.color = "#00FF00";
+                const lastUpdated = data.last_updated ? new Date(data.last_updated).toLocaleString() : "Never";
+                statusText.innerHTML = `● Live | Last Synchronized: ${lastUpdated}`;
+                
+                renderThemes(data.insights.local_clusters);
+                renderActions(data.insights.action_ideas);
+                renderDrafts(data.emails);
+                document.getElementById('json-raw').textContent = JSON.stringify(data.insights || {}, null, 2);
+            } catch (err) {
+                statusEl.style.color = "#FF0000";
+                statusText.innerHTML = `● Offline | ${err.message} | <a href="?backend=http://localhost:8000" style="color:#00D1FF">Try Local</a>`;
+            }
+        }
+
+        function renderThemes(clusters) {
+            const container = document.getElementById('themes-container');
+            container.innerHTML = '<div class="section-title">Critical Feedback Themes</div>';
+            if (!clusters || Object.keys(clusters).length === 0) {
+                container.innerHTML += '<div class="card">No data available. Run the pipeline first.</div>';
+                return;
+            }
+            Object.entries(clusters).sort((a,b) => b[1].volume - a[1].volume).slice(0, 3).forEach(([theme, data]) => {
+                container.innerHTML += `
+                    <div class="card">
+                        <div class="theme-header">
+                            <h3 style="margin:0; font-size: 20px;">${theme}</h3>
+                            <span class="badge">Score: ${data.average_rating} / 5</span>
+                        </div>
+                        <div style="font-size: 13px; color: #999; margin-bottom: 20px;">Volume: ${data.volume} reviews</div>
+                        ${(data.representative_quotes || []).slice(0, 2).map(q => `<div class="quote">"${q}"</div>`).join('')}
+                    </div>`;
+            });
+        }
+
+        function renderActions(ideas) {
+            const container = document.getElementById('actions-container');
+            container.innerHTML = (ideas || []).map(idea => `<div class="action-item">${idea}</div>`).join('');
+        }
+
+        function renderDrafts(emails) {
+            const container = document.getElementById('drafts-container');
+            container.innerHTML = (emails || []).map(draft => `
+                <div class="card stakeholder-card">
+                    <h4 style="margin: 0 0 10px; font-size: 16px;">${draft.role}</h4>
+                    <p style="font-size: 12px; color: #636E72; margin-bottom: 15px;">${draft.subject}</p>
+                    <a href="mailto:?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}" class="btn-send">Send Draft &rarr;</a>
+                </div>`).join('');
+        }
+        fetchPulse();
+    </script>
 </body>
 </html>
