@@ -107,6 +107,7 @@ async def run_weekly_pulse(request: WeeklyPulseRequest):
         run_email_drafting()
 
         # Phase 6: Interactive HTML Dashboard Synthesis
+        today_str = datetime.datetime.now().strftime("%Y%m%d")
         input_file = OUTPUT_DIR / "clustered_insights.json"
         emails_file = OUTPUT_DIR / f"Kuvera_stakeholder_emails_{today_str}.json"
         
