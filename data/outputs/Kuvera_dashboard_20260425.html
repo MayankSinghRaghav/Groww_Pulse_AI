@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuvera Pulse Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-cyan: #00D1FF;
+            --brand-black: #0F0F0F;
+            --text-main: #2D3436;
+            --bg-light: #F4F7F6;
+            --white: #FFFFFF;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+        
+        header {
+            background-color: var(--brand-black);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 6px solid var(--brand-cyan);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .logo span {
+            color: var(--brand-cyan);
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--brand-black);
+            margin: 40px 0 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: "";
+            width: 8px;
+            height: 24px;
+            background: var(--brand-cyan);
+            margin-right: 15px;
+            border-radius: 4px;
+        }
+        
+        .card {
+            background: var(--glass);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .theme-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .badge {
+            background: #E1F9FF;
+            color: #0084A3;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .quote {
+            font-size: 15px;
+            color: #636E72;
+            font-style: italic;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #F9F9F9;
+            border-radius: 8px;
+            border-left: 4px solid #DFE6E9;
+        }
+        
+        .action-card {
+            background: linear-gradient(135deg, #00D1FF 0%, #0084A3 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+        }
+        
+        .action-item {
+            display: flex;
+            align-items: start;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .action-item::before {
+            content: "✦";
+            margin-right: 15px;
+            color: #000;
+        }
+        
+        .stakeholder-card {
+            border-left: 5px solid var(--brand-cyan);
+        }
+        
+        .btn-send {
+            background: var(--brand-black);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            margin-top: 15px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-send:hover {
+            background: var(--brand-cyan);
+            color: black;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 60px 0;
+            color: #B2BEC3;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">KUVERA <span>PULSE</span></div>
+        <div style="font-size: 14px; opacity: 0.6; font-weight: 300;">Insights Engine | April 25, 2026</div>
+    </header>
+    
+    <div class="container">
+        <div class="grid">
+            <!-- Main Content: Top 3 Themes -->
+            <div>
+                <div class="section-title">Critical Feedback Themes</div>
+                
+                <div class="card">
+                    <div class="theme-header">
+                        <h3 style="margin:0">Payments</h3>
+                        <span class="badge">Rating: 4.5 / 5.0</span>
+                    </div>
+                    <div style="font-size: 13px; color: #999; margin-bottom: 20px;">Volume: 115 reviews this week</div>
+                    
+                    <div class="quote">"Smooth investment experience."</div>
+                    
+                    <div class="quote">"SIP mandate setup was very easy."</div>
+                    
+                    <div class="quote">"Transaction failed but money deducted."</div>
+                    
+                </div>
+                
+                <div class="card">
+                    <div class="theme-header">
+                        <h3 style="margin:0">Onboarding</h3>
+                        <span class="badge">Rating: 3.2 / 5.0</span>
+                    </div>
+                    <div style="font-size: 13px; color: #999; margin-bottom: 20px;">Volume: 42 reviews this week</div>
+                    
+                    <div class="quote">"Signup was stuck on OTP for 10 minutes."</div>
+                    
+                    <div class="quote">"Login keeps failing on iOS 17."</div>
+                    
+                    <div class="quote">"Simple onboarding but document upload is slow."</div>
+                    
+                </div>
+                
+                <div class="card">
+                    <div class="theme-header">
+                        <h3 style="margin:0">KYC</h3>
+                        <span class="badge">Rating: 2.1 / 5.0</span>
+                    </div>
+                    <div style="font-size: 13px; color: #999; margin-bottom: 20px;">Volume: 28 reviews this week</div>
+                    
+                    <div class="quote">"Aadhaar verification failed 3 times."</div>
+                    
+                    <div class="quote">"Documents rejected without reason."</div>
+                    
+                    <div class="quote">"Urgently need KYC approval for my SIP."</div>
+                    
+                </div>
+                
+            </div>
+
+            <!-- Sidebar: Action Ideas & Drafts -->
+            <div>
+                <div class="section-title">Action Roadmap</div>
+                <div class="action-card">
+                    
+                    <div class="action-item">Implement OTP auto-read for faster onboarding</div>
+                    
+                    <div class="action-item">Audit document compression logic to fix KYC upload failures</div>
+                    
+                    <div class="action-item">Add real-time SIP mandate status tracker in profile</div>
+                    
+                </div>
+
+                <div class="section-title">Stakeholder Drafts</div>
+                
+                <div class="card stakeholder-card">
+                    <h4 style="margin: 0 0 10px;">Product Team</h4>
+                    <p style="font-size: 13px; color: #636E72; margin-bottom: 20px; line-height: 1.4;">
+                        [Kuvera] Weekly Review Pulse - Product Team Focus
+                    </p>
+                    <a href="mailto:?subject=%5BKuvera%5D%20Weekly%20Review%20Pulse%20-%20Product%20Team%20Focus&body=Subject%3A%20Weekly%20App%20Review%20Summary%20and%20Action%20Items%20-%20Week%20of%20%5BInsert%20Date%5D%0A%0ADear%20Product%20Team%2C%0A%0AI%20am%20writing%20to%20summarize%20the%20key%20findings%20from%20this%20week%27s%20app%20reviews%2C%20highlighting%20areas%20of%20improvement%20and%20outstanding%20issues%20that%20require%20our%20attention.%20As%20we%20continue%20to%20refine%20and%20enhance%20our%20product%2C%20it%20is%20essential%20that%20we%20address%20these%20concerns%20to%20ensure%20a%20seamless%20user%20experience.%0A%0AThis%20week%2C%20we%20received%20a%20total%20of%20%5Binsert%20number%5D%20reviews%2C%20with%20an%20average%20rating%20of%20%5Binsert%20rating%5D.%20While%20we%20have%20seen%20a%20%5Binsert%20percentage%5D%25%20increase%20in%20positive%20reviews%2C%20there%20are%20still%20several%20areas%20that%20require%20our%20focus.%20The%20most%20common%20issues%20reported%20include%20%5Binsert%20issues%2C%20e.g.%2C%20login%20problems%2C%20slow%20loading%20times%2C%20and%20bugs%5D.%0A%0ATo%20provide%20a%20more%20detailed%20analysis%2C%20I%20have%20attached%20a%20comprehensive%20PDF%20report%20that%20outlines%20the%20review%20trends%2C%20user%20feedback%2C%20and%20technical%20insights.%20The%20report%20includes%3A%0A%0A%2A%20Review%20metrics%20and%20sentiment%20analysis%0A%2A%20Top-reported%20issues%20and%20their%20frequency%0A%2A%20User%20feedback%20and%20suggestions%0A%2A%20Technical%20recommendations%20for%20improvement%0A%0AI%20recommend%20that%20each%20team%20member%20reviews%20the%20attached%20report%20and%20prioritizes%20the%20following%20action%20items%3A%0A%0A%2A%20%5BInsert%20action%20item%201%2C%20e.g.%2C%20investigate%20and%20resolve%20login%20issues%5D%0A%2A%20%5BInsert%20action%20item%202%2C%20e.g.%2C%20optimize%20app%20performance%20to%20reduce%20loading%20times%5D%0A%2A%20%5BInsert%20action%20item%203%2C%20e.g.%2C%20implement%20bug%20fixes%20and%20conduct%20thorough%20testing%5D%0A%0ABy%20addressing%20these%20issues%20and%20incorporating%20user%20feedback%2C%20we%20can%20improve%20the%20overall%20quality%20and%20user%20experience%20of%20our%20app.%20I%20encourage%20each%20team%20member%20to%20provide%20their%20input%20and%20suggestions%20on%20how%20to%20tackle%20these%20challenges.%0A%0AIf%20you%20have%20any%20questions%20or%20concerns%2C%20please%20do%20not%20hesitate%20to%20reach%20out%20to%20me%20directly.%20I%20am%20available%20to%20discuss%20the%20report%20and%20action%20items%20in%20more%20detail.%0A%0AThank%20you%20for%20your%20attention%20to%20this%20matter%2C%20and%20I%20look%20forward%20to%20working%20together%20to%20enhance%20our%20product.%0A%0ABest%20regards%2C%0A%0A%5BYour%20Name%5D%0AProduct%20Communications%20Lead%0A%5BCompany%20Name%5D%0A%0AAttachments%3A%20Weekly%20App%20Review%20Report%20-%20%5BInsert%20Date%5D.pdf" class="btn-send">
+                        Send to Gmail &rarr;
+                    </a>
+                </div>
+                
+                <div class="card stakeholder-card">
+                    <h4 style="margin: 0 0 10px;">Support Team</h4>
+                    <p style="font-size: 13px; color: #636E72; margin-bottom: 20px; line-height: 1.4;">
+                        [Kuvera] Weekly Review Pulse - Support Team Focus
+                    </p>
+                    <a href="mailto:?subject=%5BKuvera%5D%20Weekly%20Review%20Pulse%20-%20Support%20Team%20Focus&body=Subject%3A%20Weekly%20App%20Review%20Summary%20and%20Support%20Insights%0A%0ADear%20Support%20Team%2C%0A%0AI%20hope%20this%20email%20finds%20you%20well.%20As%20we%20continue%20to%20prioritize%20our%20users%27%20experience%20and%20feedback%2C%20I%20wanted%20to%20take%20a%20moment%20to%20summarize%20this%20week%27s%20app%20reviews%20and%20share%20some%20key%20insights%20that%20may%20inform%20our%20support%20strategies.%0A%0AThis%20week%2C%20we%27ve%20seen%20a%20mix%20of%20positive%20and%20constructive%20feedback%20from%20our%20users.%20While%20many%20have%20praised%20our%20app%27s%20features%20and%20performance%2C%20some%20have%20also%20raised%20important%20issues%20that%20we%20need%20to%20address.%20I%27ve%20attached%20a%20detailed%20PDF%20report%20to%20this%20email%2C%20which%20provides%20a%20comprehensive%20overview%20of%20the%20reviews%2C%20including%20trends%2C%20pain%20points%2C%20and%20areas%20of%20improvement.%0A%0AThe%20report%20highlights%20that%20our%20users%20are%20generally%20satisfied%20with%20our%20app%27s%20user%20interface%20and%20functionality.%20However%2C%20some%20have%20experienced%20issues%20with%20navigation%2C%20login%2C%20and%20occasional%20crashes.%20We%27ve%20also%20received%20feedback%20on%20our%20customer%20support%20response%20times%2C%20with%20some%20users%20expressing%20appreciation%20for%20our%20prompt%20assistance%20and%20others%20suggesting%20that%20we%20could%20improve%20our%20communication%20channels.%0A%0AI%20want%20to%20acknowledge%20the%20hard%20work%20and%20dedication%20that%20each%20of%20you%20brings%20to%20our%20support%20team%20every%20day.%20Your%20tireless%20efforts%20to%20resolve%20issues%2C%20answer%20questions%2C%20and%20provide%20empathetic%20support%20to%20our%20users%20are%20truly%20valued%20and%20appreciated.%20I%20encourage%20you%20to%20review%20the%20attached%20report%20and%20use%20the%20insights%20to%20inform%20your%20support%20interactions%2C%20identify%20areas%20where%20we%20can%20improve%2C%20and%20develop%20strategies%20to%20address%20the%20concerns%20raised%20by%20our%20users.%0A%0AIf%20you%20have%20any%20questions%2C%20concerns%2C%20or%20suggestions%20on%20how%20we%20can%20better%20support%20our%20users%2C%20please%20don%27t%20hesitate%20to%20reach%20out.%20Your%20input%20is%20invaluable%20in%20helping%20us%20refine%20our%20support%20processes%20and%20ensure%20that%20we%27re%20providing%20the%20best%20possible%20experience%20for%20our%20users.%0A%0AThank%20you%20for%20all%20that%20you%20do%2C%20and%20let%27s%20work%20together%20to%20continue%20delivering%20exceptional%20support%20to%20our%20users.%0A%0ABest%20regards%2C%0A%0A%5BYour%20Name%5D%0AProduct%20Communications%20Lead%0A%0A%5BAttach%20PDF%20report%5D" class="btn-send">
+                        Send to Gmail &rarr;
+                    </a>
+                </div>
+                
+                <div class="card stakeholder-card">
+                    <h4 style="margin: 0 0 10px;">Leadership</h4>
+                    <p style="font-size: 13px; color: #636E72; margin-bottom: 20px; line-height: 1.4;">
+                        [Kuvera] Weekly Review Pulse - Leadership Focus
+                    </p>
+                    <a href="mailto:?subject=%5BKuvera%5D%20Weekly%20Review%20Pulse%20-%20Leadership%20Focus&body=Subject%3A%20Weekly%20App%20Review%20Summary%20and%20Insights%0A%0ADear%20Leadership%20Team%2C%0A%0AI%20am%20writing%20to%20provide%20a%20summary%20of%20this%20week%27s%20app%20reviews%2C%20highlighting%20key%20trends%20and%20areas%20for%20improvement.%20Our%20analysis%20indicates%20a%20positive%20overall%20sentiment%2C%20with%20users%20praising%20the%20app%27s%20usability%20and%20feature%20updates.%0A%0AThe%20attached%20PDF%20report%20provides%20a%20detailed%20breakdown%20of%20the%20reviews%2C%20including%20metrics%20on%20user%20satisfaction%2C%20ratings%2C%20and%20feedback.%20Key%20takeaways%20include%3A%0A%0A%2A%20A%2015%25%20increase%20in%205-star%20ratings%20compared%20to%20the%20previous%20week%0A%2A%20Positive%20feedback%20on%20the%20recent%20UI%20enhancements%0A%2A%20Opportunities%20for%20improvement%20in%20terms%20of%20app%20performance%20and%20bug%20fixes%0A%0AThe%20insights%20from%20this%20week%27s%20reviews%20will%20inform%20our%20product%20roadmap%20and%20prioritize%20future%20development%20efforts.%20I%20recommend%20reviewing%20the%20attached%20report%20for%20a%20comprehensive%20understanding%20of%20the%20data%20and%20trends.%0A%0AIf%20you%20have%20any%20questions%20or%20would%20like%20to%20discuss%20the%20report%20in%20more%20detail%2C%20please%20do%20not%20hesitate%20to%20reach%20out.%0A%0ABest%20regards%2C%0A%5BYour%20Name%5D%0AProduct%20Communications%20Lead%0A%0AAttachment%3A%20Weekly%20App%20Review%20Report.pdf" class="btn-send">
+                        Send to Gmail &rarr;
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="section-title">Technical Pulse Data (JSON)</div>
+        <div class="card" style="background: #1E1E1E; color: #D4D4D4; font-family: 'Courier New', Courier, monospace; padding: 25px; overflow-x: auto; font-size: 13px;">
+            <pre>{
+  "local_clusters": {
+    "Onboarding": {
+      "volume": 42,
+      "average_rating": 3.2,
+      "representative_quotes": [
+        "Signup was stuck on OTP for 10 minutes.",
+        "Login keeps failing on iOS 17.",
+        "Simple onboarding but document upload is slow."
+      ]
+    },
+    "KYC": {
+      "volume": 28,
+      "average_rating": 2.1,
+      "representative_quotes": [
+        "Aadhaar verification failed 3 times.",
+        "Documents rejected without reason.",
+        "Urgently need KYC approval for my SIP."
+      ]
+    },
+    "Payments": {
+      "volume": 115,
+      "average_rating": 4.5,
+      "representative_quotes": [
+        "Smooth investment experience.",
+        "SIP mandate setup was very easy.",
+        "Transaction failed but money deducted."
+      ]
+    }
+  },
+  "action_ideas": [
+    "Implement OTP auto-read for faster onboarding",
+    "Audit document compression logic to fix KYC upload failures",
+    "Add real-time SIP mandate status tracker in profile"
+  ]
+}</pre>
+        </div>
+    </div>
+    
+    <footer>
+        PROPRIETARY REPORT BY KUVERA BY CRED
+    </footer>
+</body>
+</html>

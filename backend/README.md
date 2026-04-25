@@ -7,9 +7,40 @@ An automated, zero-cost pipeline for scraping, analyzing, and reporting app stor
 - **Stakeholder Emails:** [Kuvera_stakeholder_emails_20260425.json](data/outputs/Kuvera_stakeholder_emails_20260425.json)
 - **Data Source:** [clean_reviews_20260425.csv](data/processed/clean_reviews_20260425.csv)
 
+## 📧 Email Authentication
+
+The system supports **two methods** for sending emails:
+
+### Method 1: OAuth 2.0 (Recommended) ✅
+
+Secure, passwordless authentication using Gmail API.
+
+**Setup:**
+1. OAuth credentials are already configured in `.env`
+2. Start the server: `python mcp_server.py`
+3. Authorize your Google account: Visit `http://localhost:8000/oauth/authorize`
+4. Grant permissions and complete the OAuth flow
+5. Test it: `curl -X POST http://localhost:8000/oauth/test-email`
+
+**Management:**
+- Check status: `GET /oauth/status`
+- Revoke access: `POST /oauth/logout`
+- Full guide: [docs/OAuth_Setup_Guide.md](docs/OAuth_Setup_Guide.md)
+
+### Method 2: SMTP (Fallback)
+
+Traditional email/password authentication (used if OAuth is not configured).
+
+**Setup:**
+- Configure `SMTP_EMAIL` and `SMTP_PASSWORD` in `.env`
+- Use a Gmail App Password (not your regular password)
+
+---
+
 ## 🔄 How to Re-run for a New Week
 1. **Ensure Environment is Ready:**
    - Put your `GROQ_API_KEY` in the `.env` file.
+   - Complete OAuth authorization (see Email Authentication section above)
 2. **Launch the Service (Optional):**
    ```bash
    python mcp_server.py
@@ -19,6 +50,51 @@ An automated, zero-cost pipeline for scraping, analyzing, and reporting app stor
    python scripts/run_weekly_pulse.py
    ```
    *This will automatically scrape the latest reviews, cluster them, generate the branded reports (PDF/HTML/MD), and draft stakeholder emails.*
+
+## 🚀 Quick Start
+
+### First Time Setup (5 minutes)
+
+```bash
+# 1. Start the backend server
+cd backend
+python mcp_server.py
+
+# 2. In another terminal, run the OAuth test script
+python test_oauth.py
+
+# 3. Follow the prompts to complete authorization
+```
+
+### After Authorization
+
+```bash
+# Check OAuth status
+curl http://localhost:8000/oauth/status
+
+# Run weekly pulse
+python scripts/run_weekly_pulse.py
+
+# Send stakeholder emails (via frontend or API)
+```
+
+## 📋 API Endpoints
+
+### OAuth Management
+- `GET /oauth/authorize` - Start OAuth flow
+- `GET /oauth/callback` - OAuth callback handler
+- `GET /oauth/status` - Check authentication status
+- `POST /oauth/logout` - Revoke credentials
+- `POST /oauth/test-email` - Send test email
+
+### Core Pipeline
+- `POST /mcp/run-weekly-pulse` - Run the full pipeline
+- `GET /mcp/latest-results` - Get latest insights
+- `POST /mcp/send-email` - Send stakeholder email with PDF
+- `GET /mcp/download-note/{filename}` - Download PDF note
+
+### Health Check
+- `GET /health` - Server health check
 
 ## 🏷️ Theme Legend (Taxonomy)
 The system uses a two-pass classification system:

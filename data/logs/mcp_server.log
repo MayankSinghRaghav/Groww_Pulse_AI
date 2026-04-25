@@ -1,0 +1,34 @@
+2026-04-25 23:44:41,993 - mcp_server - INFO - Executing Phase 2: Ingestion...
+2026-04-25 23:44:41,995 - review_ingestion - INFO - Starting ingestion. Cutoff date: 2026-02-28
+2026-04-25 23:44:41,996 - review_ingestion - INFO - Fetching reviews from Google Play...
+2026-04-25 23:44:42,266 - review_ingestion - INFO - Fetching reviews from App Store...
+2026-04-25 23:44:43,913 - Base - INFO - Initialised: AppStore('in', 'kuvera', 1256317260)
+2026-04-25 23:44:43,913 - Base - INFO - Ready to fetch reviews from: https://apps.apple.com/in/app/kuvera/id1256317260
+2026-04-25 23:44:45,235 - Base - ERROR - Something went wrong: Expecting value: line 1 column 1 (char 0)
+2026-04-25 23:44:45,238 - Base - INFO - [id:1256317260] Fetched 0 reviews (0 fetched in total)
+2026-04-25 23:44:45,238 - review_ingestion - INFO - Raw reviews fetched: 0
+2026-04-25 23:44:45,238 - review_ingestion - INFO - Processing 0 raw reviews...
+2026-04-25 23:44:45,239 - review_ingestion - INFO - Clean (English, Valid Spelling) reviews: 0
+2026-04-25 23:44:45,242 - review_ingestion - INFO - Saved processed reviews to C:\Users\rites\.gemini\antigravity\scratch\kuvera_weekly_pulse\backend\data\processed\clean_reviews_20260425.json
+2026-04-25 23:44:45,242 - mcp_server - INFO - Executing Phase 3: Clustering...
+2026-04-25 23:44:45,245 - theme_clustering - INFO - Starting pipeline for 0 reviews.
+2026-04-25 23:44:45,246 - theme_clustering - INFO - Local Pre-Clustering complete. 0 reviews require advanced LLM.
+2026-04-25 23:44:50,239 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-25 23:44:50,279 - theme_clustering - INFO - Clustering pipeline complete.
+2026-04-25 23:44:50,280 - mcp_server - INFO - Executing Phase 4: Report Generation...
+2026-04-25 23:44:50,280 - insight_generation - INFO - Starting insight generation phase.
+2026-04-25 23:44:50,314 - insight_generation - INFO - Weekly One-Page Note generated: data\outputs\Kuvera_weekly_pulse_20260425.md
+2026-04-25 23:44:50,354 - insight_generation - INFO - Report generated: data\outputs\Kuvera_weekly_pulse_20260425.pdf
+2026-04-25 23:44:50,355 - insight_generation - INFO - Insight generation pipeline complete.
+2026-04-25 23:44:50,355 - mcp_server - INFO - Executing Phase 5: Email Drafting...
+2026-04-25 23:44:50,356 - email_draft - INFO - Starting email drafting phase.
+2026-04-25 23:44:51,286 - email_draft - INFO - Drafting email for Product Team...
+2026-04-25 23:44:53,629 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-25 23:44:53,632 - email_draft - INFO - Drafting email for Support Team...
+2026-04-25 23:44:55,573 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-25 23:44:55,575 - email_draft - INFO - Drafting email for Leadership...
+2026-04-25 23:44:56,496 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-25 23:44:56,501 - email_draft - INFO - Saved 3 email drafts to data\outputs\Kuvera_stakeholder_emails_20260425.json
+2026-04-25 23:44:56,501 - email_draft - INFO - Email drafting pipeline complete.
+2026-04-25 23:44:56,610 - report_html - WARNING - No real data found. Using high-confidence sample pulse for dashboard preview.
+2026-04-25 23:44:56,623 - report_html - INFO - Interactive Pulse Dashboard generated: data\outputs\Kuvera_dashboard_20260425.html

@@ -7,3 +7,6 @@ backend/data/logs/*.log
 backend/data/outputs/*.pdf
 backend/data/outputs/*.json
 backend/data/outputs/*.html
+backend/data/outputs/*.md
+backend/data/tokens/
+*.token

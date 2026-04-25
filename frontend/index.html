@@ -313,87 +313,63 @@
                     <h4 style="margin: 0 0 8px; font-size: 16px;">${draft.role}</h4>
                     <p style="font-size: 12px; color: #636E72; margin-bottom: 15px;">${draft.subject}</p>
                     <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                        <button onclick="openSendModal('${draft.role}')" class="btn-send" style="border:none; cursor:pointer;">✉ Send Mail</button>
+                        <button onclick="openGmailCompose('${draft.role}')" class="btn-send" style="border:none; cursor:pointer;">✉ Compose in Gmail</button>
                         ${pdfBtn}
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- Gmail MCP: Send Mail Modal ---
-        function openSendModal(role) {
-            document.getElementById('modal-role').value = role;
-            document.getElementById('modal-role-label').textContent = role;
-            document.getElementById('modal-recipient').value = '';
-            document.getElementById('modal-status').textContent = '';
-            document.getElementById('send-modal').style.display = 'flex';
-        }
+        // --- Gmail Compose: Opens Gmail with pre-filled content ---
+        function openGmailCompose(role) {
+            // Get recipient email from user
+            const recipient = prompt('Enter recipient email address (optional):');
+            
+            // Build the compose URL
+            const composeUrl = recipient 
+                ? `${BACKEND_URL}/mcp/gmail-compose?role=${encodeURIComponent(role)}&recipient_email=${encodeURIComponent(recipient)}`
+                : `${BACKEND_URL}/mcp/gmail-compose?role=${encodeURIComponent(role)}`;
+            
+            // Fetch the compose URL and open Gmail
+            fetch(composeUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        if (!data.pdf_exists) {
+                            alert('⚠️ PDF note not found. Please run the weekly pulse first to generate the report.');
+                            return;
+                        }
+                        
+                        // Show instructions
+                        const instructions = `📧 Gmail Compose Instructions:
 
-        function closeModal() {
-            document.getElementById('send-modal').style.display = 'none';
-        }
+1. Gmail compose window will open in a new tab
+2. Download the PDF from the link in the email body
+3. Attach the PDF to the email (drag & drop or use attachment button)
+4. Verify recipient email address
+5. Click Send
 
-        async function sendEmail() {
-            const role = document.getElementById('modal-role').value;
-            const recipient = document.getElementById('modal-recipient').value.trim();
-            const statusEl = document.getElementById('modal-status');
-            const sendBtn = document.getElementById('modal-send-btn');
-
-            if (!recipient || !recipient.includes('@')) {
-                statusEl.style.color = '#e17055';
-                statusEl.textContent = 'Please enter a valid email address.';
-                return;
-            }
-
-            sendBtn.disabled = true;
-            sendBtn.textContent = 'Sending...';
-            statusEl.style.color = '#636E72';
-            statusEl.textContent = 'Sending email with PDF attached...';
-
-            try {
-                const response = await fetch(`${BACKEND_URL}/mcp/send-email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ role: role, recipient_email: recipient })
+PDF Download Link:
+${data.pdf_download_url}`;
+                        
+                        if (confirm(instructions + '\n\nClick OK to open Gmail compose window.')) {
+                            // Open Gmail compose URL in new window
+                            const gmailWindow = window.open(data.gmail_compose_url, '_blank');
+                            
+                            if (!gmailWindow || gmailWindow.closed || typeof gmailWindow.closed === 'undefined') {
+                                alert('⚠️ Pop-up blocked! Please allow pop-ups for this site and try again.');
+                            }
+                        }
+                    } else {
+                        alert('❌ Failed to generate Gmail compose URL: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    alert('❌ Error: ' + err.message);
                 });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.detail || 'Send failed');
-                statusEl.style.color = '#00b894';
-                statusEl.textContent = `✅ Email sent to ${recipient}!`;
-                sendBtn.textContent = 'Sent!';
-                setTimeout(closeModal, 2000);
-            } catch (err) {
-                statusEl.style.color = '#e17055';
-                statusEl.textContent = `❌ ${err.message}`;
-                sendBtn.disabled = false;
-                sendBtn.textContent = 'Send';
-            }
         }
 
         fetchPulse();
     </script>
-
-    <!-- Send Mail Modal -->
-    <div id="send-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:16px; padding:32px; max-width:420px; width:90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-            <h3 style="margin:0 0 6px; font-family:'Outfit',sans-serif; color:#0F0F0F;">Send Pulse Note</h3>
-            <p style="margin:0 0 20px; font-size:13px; color:#636E72;">Sending briefing for: <strong id="modal-role-label"></strong></p>
-            <input type="hidden" id="modal-role" />
-            <label style="font-size:13px; font-weight:600; color:#2D3436;">Recipient Email</label>
-            <input id="modal-recipient" type="email" placeholder="stakeholder@company.com"
-                style="width:100%; margin-top:8px; padding:12px 14px; border:1px solid #DFE6E9; border-radius:8px; font-size:14px; font-family:'Outfit',sans-serif; box-sizing:border-box; outline:none;"
-                onkeydown="if(event.key==='Enter') sendEmail()" />
-            <p style="font-size:11px; color:#999; margin:8px 0 0;">The branded PDF note will be automatically attached.</p>
-            <p id="modal-status" style="font-size:12px; margin:10px 0 0; min-height:18px;"></p>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button id="modal-send-btn" onclick="sendEmail()"
-                    style="flex:1; background:#0F0F0F; color:white; border:none; padding:13px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Outfit',sans-serif; transition:background 0.2s;"
-                    onmouseover="this.style.background='#00D1FF'; this.style.color='#000'"
-                    onmouseout="this.style.background='#0F0F0F'; this.style.color='white'">Send</button>
-                <button onclick="closeModal()"
-                    style="flex:1; background:#F4F7F6; color:#636E72; border:1px solid #DFE6E9; padding:13px; border-radius:8px; font-size:14px; cursor:pointer; font-family:'Outfit',sans-serif;">Cancel</button>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

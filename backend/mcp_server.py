@@ -1,6 +1,6 @@
 import uvicorn
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import datetime
@@ -34,6 +34,7 @@ logging.basicConfig(
 logger = logging.getLogger("mcp_server")
 
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 import json
 
 app = FastAPI(title="Kuvera Weekly Pulse MCP Server", version="1.0.0")
@@ -90,6 +91,210 @@ async def get_latest_results():
 async def health_check():
     return {"status": "ok", "version": "1.0.0", "timestamp": datetime.datetime.now().isoformat()}
 
+# ==================== OAuth 2.0 Endpoints ====================
+
+@app.get("/oauth/authorize")
+async def oauth_authorize():
+    """
+    Step 1: Initiate OAuth flow - redirect user to Google consent screen
+    """
+    try:
+        from tools.gmail_oauth import get_authorization_url
+        auth_url = get_authorization_url()
+        logger.info("Redirecting to Google OAuth consent screen")
+        return RedirectResponse(url=auth_url)
+    except Exception as e:
+        logger.error(f"OAuth authorization error: {e}")
+        raise HTTPException(status_code=500, detail=f"OAuth initialization failed: {str(e)}")
+
+@app.get("/oauth/callback")
+async def oauth_callback(code: str = None, state: str = None, error: str = None):
+    """
+    Step 2: Handle OAuth callback from Google
+    Exchange authorization code for access/refresh tokens
+    """
+    if error:
+        logger.error(f"OAuth error: {error}")
+        return {
+            "status": "error",
+            "message": f"Authorization failed: {error}",
+            "details": "User denied access or an error occurred during authorization"
+        }
+    
+    if not code or not state:
+        raise HTTPException(status_code=400, detail="Missing authorization code or state parameter")
+    
+    try:
+        from tools.gmail_oauth import handle_oauth_callback, get_user_profile
+        from urllib.parse import urlencode
+        
+        # Reconstruct the full callback URL for token exchange
+        authorization_response = f"{request.url.scheme}://{request.url.netloc}{request.url.path}?{urlencode({'code': code, 'state': state})}"
+        
+        # Exchange code for tokens
+        creds = handle_oauth_callback(authorization_response, state)
+        
+        # Get user profile
+        profile = get_user_profile(creds)
+        
+        logger.info(f"OAuth successful! Authenticated as: {profile['email']}")
+        
+        return {
+            "status": "success",
+            "message": "OAuth authorization completed successfully!",
+            "user": {
+                "email": profile['email'],
+                "messages_total": profile['messages_total']
+            },
+            "next_steps": "You can now use the /mcp/send-email endpoint to send emails via Gmail API"
+        }
+        
+    except Exception as e:
+        logger.error(f"OAuth callback error: {e}")
+        raise HTTPException(status_code=500, detail=f"OAuth callback failed: {str(e)}")
+
+@app.get("/oauth/status")
+async def oauth_status():
+    """Check current OAuth authentication status"""
+    try:
+        from tools.gmail_oauth import refresh_credentials_if_needed, get_user_profile
+        
+        creds = refresh_credentials_if_needed()
+        
+        if not creds:
+            return {
+                "authenticated": False,
+                "message": "No valid OAuth credentials found. Please authorize first via /oauth/authorize"
+            }
+        
+        profile = get_user_profile(creds)
+        
+        return {
+            "authenticated": True,
+            "user": {
+                "email": profile['email'],
+                "messages_total": profile['messages_total']
+            },
+            "token_expiry": creds.expiry.isoformat() if creds.expiry else None,
+            "message": "OAuth credentials are valid and ready to use"
+        }
+        
+    except Exception as e:
+        logger.error(f"OAuth status check error: {e}")
+        return {
+            "authenticated": False,
+            "error": str(e)
+        }
+
+@app.post("/oauth/logout")
+async def oauth_logout():
+    """Revoke OAuth credentials (logout)"""
+    try:
+        from tools.gmail_oauth import get_stored_credentials, revoke_credentials
+        
+        creds = get_stored_credentials()
+        
+        if not creds:
+            return {
+                "status": "success",
+                "message": "No credentials to revoke"
+            }
+        
+        success = revoke_credentials(creds)
+        
+        if success:
+            return {
+                "status": "success",
+                "message": "OAuth credentials revoked successfully"
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to revoke credentials")
+            
+    except Exception as e:
+        logger.error(f"OAuth logout error: {e}")
+        raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
+
+@app.post("/oauth/test-email")
+async def test_oauth_email():
+    """Send a test email using OAuth to verify the integration works"""
+    try:
+        from tools.gmail_oauth import refresh_credentials_if_needed, get_user_profile, send_email_via_gmail_api
+        
+        # Get valid credentials
+        creds = refresh_credentials_if_needed()
+        
+        if not creds:
+            raise HTTPException(
+                status_code=401, 
+                detail="No valid OAuth credentials. Please authorize first via /oauth/authorize"
+            )
+        
+        # Get user profile
+        profile = get_user_profile(creds)
+        sender_email = profile['email']
+        
+        # Send test email to self
+        subject = "[Kuvera Pulse] OAuth Test Email"
+        body_text = """This is a test email to verify that the Gmail OAuth integration is working correctly.
+
+If you received this email, the OAuth 2.0 authentication is properly configured!
+
+Next steps:
+1. Run the weekly pulse to generate reports
+2. Use the /mcp/send-email endpoint to send stakeholder emails with PDF attachments
+
+Regards,
+Kuvera Pulse AI Engine"""
+        
+        result = send_email_via_gmail_api(
+            creds=creds,
+            sender=f"Kuvera Pulse <{sender_email}>",
+            to=sender_email,
+            subject=subject,
+            body_text=body_text
+        )
+        
+        return {
+            "status": "success",
+            "message": f"Test email sent to {sender_email}",
+            "message_id": result['message_id']
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Test email error: {e}")
+        raise HTTPException(status_code=500, detail=f"Test email failed: {str(e)}")
+
+@app.get("/mcp/gmail-compose")
+async def gmail_compose_url(role: str, recipient_email: str = "", request: Request = None):
+    """
+    Generate Gmail compose URL with pre-filled content
+    Opens Gmail compose window with subject, body, and PDF download link
+    User manually attaches PDF and sends
+    """
+    try:
+        from tools.gmail_compose import generate_gmail_compose_url
+        import os
+        
+        # Get backend URL from environment or use default
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
+        
+        # For production, use the actual backend URL
+        if request and hasattr(request, 'base_url') and "onrender.com" in str(request.base_url):
+            backend_url = str(request.base_url).rstrip('/')
+        
+        result = generate_gmail_compose_url(role, recipient_email, backend_url)
+        
+        logger.info(f"Generated Gmail compose URL for role: {role}")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Gmail compose URL generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate compose URL: {str(e)}")
+
+# ==================== Existing Endpoints ====================
+
 @app.get("/mcp/download-note/{filename}")
 async def download_note(filename: str):
     from config.settings import OUTPUT_DIR
@@ -105,19 +310,12 @@ async def download_note(filename: str):
 
 @app.post("/mcp/send-email")
 def send_email_with_pdf(request: SendEmailRequest):
-    """Gmail MCP Tool: Sends a role-specific pulse note email with PDF attached via SMTP."""
-    import smtplib
-    import os
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-    from email.mime.application import MIMEApplication
+    """
+    Gmail MCP Tool: Sends a role-specific pulse note email with PDF attached.
+    Uses OAuth 2.0 for secure authentication (fallback to SMTP if OAuth not configured)
+    """
     from config.settings import OUTPUT_DIR
-
-    smtp_email = os.getenv("SMTP_EMAIL")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-
-    if not smtp_email or not smtp_password:
-        raise HTTPException(status_code=500, detail="SMTP credentials not configured. Set SMTP_EMAIL and SMTP_PASSWORD in Render environment.")
+    import os
 
     # Find the PDF for this role
     today_str = datetime.datetime.now().strftime("%Y%m%d")
@@ -138,6 +336,56 @@ def send_email_with_pdf(request: SendEmailRequest):
     }
     body_text = role_intros.get(request.role, "Please find this week's Kuvera Pulse Note attached.")
     body_text += f"\n\nThe note covers:\n  • Top 3 critical feedback themes\n  • 3 real user quotes\n  • 3 recommended actions for your team\n\nRegards,\n{request.sender_name}"
+
+    # Try OAuth first, fallback to SMTP
+    try:
+        from tools.gmail_oauth import send_email_with_oauth, refresh_credentials_if_needed
+        
+        # Check if OAuth is configured
+        creds = refresh_credentials_if_needed()
+        
+        if creds:
+            # Use OAuth
+            logger.info(f"Sending email via Gmail OAuth to {request.recipient_email}")
+            result = send_email_with_oauth(
+                to=request.recipient_email,
+                subject=subject,
+                body_text=body_text,
+                pdf_path=str(pdf_path),
+                sender_name=request.sender_name
+            )
+            
+            if result['status'] == 'success':
+                logger.info(f"Email sent successfully to {request.recipient_email} via OAuth. Message ID: {result.get('message_id')}")
+                return {
+                    "status": "success",
+                    "message": f"Email with PDF note sent to {request.recipient_email} via Gmail API",
+                    "method": "oauth",
+                    "message_id": result.get('message_id')
+                }
+            else:
+                logger.warning(f"OAuth send failed: {result.get('message')}. Falling back to SMTP...")
+        else:
+            logger.info("No OAuth credentials found, using SMTP fallback")
+            
+    except Exception as e:
+        logger.warning(f"OAuth error: {e}. Falling back to SMTP...")
+    
+    # Fallback to SMTP
+    logger.info(f"Sending email via SMTP to {request.recipient_email}")
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.application import MIMEApplication
+
+    smtp_email = os.getenv("SMTP_EMAIL")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+
+    if not smtp_email or not smtp_password:
+        raise HTTPException(
+            status_code=500, 
+            detail="Neither OAuth nor SMTP credentials are configured. Please either:\n1. Complete OAuth authorization via /oauth/authorize, OR\n2. Set SMTP_EMAIL and SMTP_PASSWORD in environment variables"
+        )
 
     # Build the email
     msg = MIMEMultipart()
@@ -160,10 +408,17 @@ def send_email_with_pdf(request: SendEmailRequest):
             server.starttls()
             server.login(smtp_email, smtp_password)
             server.sendmail(smtp_email, request.recipient_email, msg.as_string())
-        logger.info(f"Email sent to {request.recipient_email} for role '{request.role}'")
-        return {"status": "success", "message": f"Email with PDF note sent to {request.recipient_email}"}
+        logger.info(f"Email sent to {request.recipient_email} for role '{request.role}' via SMTP")
+        return {
+            "status": "success", 
+            "message": f"Email with PDF note sent to {request.recipient_email} via SMTP",
+            "method": "smtp"
+        }
     except smtplib.SMTPAuthenticationError:
-        raise HTTPException(status_code=401, detail="Gmail authentication failed. Ensure SMTP_PASSWORD is a Gmail App Password (not your regular password). Enable 2FA and generate an App Password at myaccount.google.com/apppasswords")
+        raise HTTPException(
+            status_code=401, 
+            detail="Gmail authentication failed. Ensure SMTP_PASSWORD is a Gmail App Password (not your regular password). Enable 2FA and generate an App Password at myaccount.google.com/apppasswords"
+        )
     except Exception as e:
         logger.error(f"SMTP send failed: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
