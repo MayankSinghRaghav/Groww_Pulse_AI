@@ -9,11 +9,8 @@ import json
 from config.settings import RAW_REVIEWS_DIR, PROCESSED_DATA_DIR, REVIEW_WINDOW_WEEKS
 
 logger = logging.getLogger("review_ingestion")
-try:
-    spell = SpellChecker()
-except Exception:
-    # Fallback if spellchecker isn't fully installed yet
-    spell = None
+# SpellChecker is deferred or unused to speed up cloud startup
+spell = None
 
 # Kuvera app identifiers
 PLAY_STORE_APP_ID = "com.onie.kuvera"  
