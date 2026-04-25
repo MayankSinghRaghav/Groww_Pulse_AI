@@ -77,7 +77,7 @@ async def health_check():
 
 
 @app.post("/mcp/run-weekly-pulse")
-async def run_weekly_pulse(request: WeeklyPulseRequest):
+def run_weekly_pulse(request: WeeklyPulseRequest):
     logger.info(f"🚀 Starting weekly pulse for {request.app_name} (Last {request.weeks} weeks)")
     
     try:
