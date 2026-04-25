@@ -4,7 +4,7 @@ pydantic
 python-dotenv
 httpx
 requests
-urllib3
+urllib3<2.0.0
 beautifulsoup4
 google-play-scraper
 app-store-scraper
