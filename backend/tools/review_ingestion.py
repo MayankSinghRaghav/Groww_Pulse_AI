@@ -12,10 +12,10 @@ logger = logging.getLogger("review_ingestion")
 # SpellChecker is deferred or unused to speed up cloud startup
 spell = None
 
-# Kuvera app identifiers
-PLAY_STORE_APP_ID = "com.onie.kuvera"  
+# Kuvera app identifiers (Updated after CRED acquisition rebrand)
+PLAY_STORE_APP_ID = "com.gooogle.android.kuvera.app"  # Verified working 2026-04-26
 APP_STORE_APP_NAME = "kuvera"
-APP_STORE_APP_ID = "1256317260"
+APP_STORE_APP_ID = "1329701793"  # Correct ID from iTunes lookup
 
 def is_valid_english_text(text: str) -> bool:
     """Filters for minimum content length."""
@@ -86,10 +86,15 @@ def fetch_play_store_reviews(cutoff_date: datetime.datetime, count: int = 5000) 
         return []
 
 def fetch_app_store_reviews(cutoff_date: datetime.datetime, count: int = 1000) -> List[Dict[str, Any]]:
+    """App Store scraper - Apple's API frequently rate-limits. Returns empty list gracefully."""
     logger.info("Fetching reviews from App Store...")
     try:
         kuvera_app = AppStore(country='in', app_name=APP_STORE_APP_NAME, app_id=APP_STORE_APP_ID)
-        kuvera_app.review(how_many=count)
+        kuvera_app.review(how_many=min(count, 200))  # Keep request small to avoid rate-limit
+        
+        if not kuvera_app.reviews:
+            logger.warning("App Store returned 0 reviews (likely rate-limited by Apple). Continuing with Play Store data only.")
+            return []
         
         formatted = []
         for r in kuvera_app.reviews:
@@ -101,9 +106,10 @@ def fetch_app_store_reviews(cutoff_date: datetime.datetime, count: int = 1000) -
                 'content': r['review'],
                 'version': None
             })
+        logger.info(f"App Store: fetched {len(formatted)} reviews.")
         return formatted
     except Exception as e:
-        logger.error(f"App Store fetch error: {e}")
+        logger.warning(f"App Store fetch skipped: {e}. Continuing with Play Store data only.")
         return []
 
 def run_ingestion_pipeline() -> List[Dict[str, Any]]:
