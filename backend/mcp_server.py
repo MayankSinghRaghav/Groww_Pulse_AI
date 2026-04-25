@@ -5,20 +5,15 @@ from typing import List, Optional
 import datetime
 import logging
 from config.settings import LOG_DIR, LOG_LEVEL
-# Monkey-patch to fix app-store-scraper compatibility with urllib3 v2+ on Render
+# FORCE RESOLVE DEPENDENCY CONFLICT ON RENDER
+import subprocess
+import sys
 try:
-    import sys
-    import six
-    import urllib3
-    if not hasattr(urllib3, 'packages'):
-        urllib3.packages = type('packages', (), {'six': six})()
-        sys.modules['urllib3.packages'] = urllib3.packages
-        sys.modules['urllib3.packages.six'] = six
-        sys.modules['urllib3.packages.six.moves'] = six.moves
-except ImportError as e:
-    print(f"Warning: Missing dependencies during startup: {e}")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "urllib3==1.26.15", "six"])
+    print("Forced installation of urllib3==1.26.15 to fix app-store-scraper compatibility.")
 except Exception as e:
-    print(f"Warning: Monkey-patch failed during startup: {e}")
+    print(f"Warning: Forced pip install failed: {e}")
+
 
 # Configure logging
 handlers = [logging.StreamHandler()]
