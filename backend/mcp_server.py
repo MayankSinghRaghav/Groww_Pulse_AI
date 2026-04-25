@@ -34,15 +34,20 @@ class WeeklyPulseRequest(BaseModel):
 async def health_check():
     return {"status": "ok", "version": "1.0.0", "timestamp": datetime.datetime.now().isoformat()}
 
-from tools.review_ingestion import run_ingestion_pipeline
-from tools.theme_clustering import run_clustering_pipeline
-from tools.insight_generation import run_insight_generation
-from tools.email_draft import run_email_drafting
 
 @app.post("/mcp/run-weekly-pulse")
 async def run_weekly_pulse(request: WeeklyPulseRequest):
     logger.info(f"🚀 Starting weekly pulse for {request.app_name} (Last {request.weeks} weeks)")
     
+    # Lazy-load tools to ensure server starts regardless of tool-level import issues
+    from tools.review_ingestion import run_ingestion_pipeline
+    from tools.theme_clustering import run_clustering_pipeline
+    from tools.insight_generation import run_insight_generation
+    from tools.email_draft import run_email_drafting
+    from tools.report_html import generate_report_html
+    from config.settings import OUTPUT_DIR, APP_NAME
+    import json
+
     try:
         # Phase 2: Ingestion
         logger.info("Executing Phase 2: Ingestion...")
@@ -61,11 +66,6 @@ async def run_weekly_pulse(request: WeeklyPulseRequest):
         run_email_drafting()
 
         # Phase 6: Interactive HTML Dashboard Synthesis
-        from tools.report_html import generate_report_html
-        import json
-        from config.settings import OUTPUT_DIR, APP_NAME
-        
-        today_str = datetime.datetime.now().strftime("%Y%m%d")
         input_file = OUTPUT_DIR / "clustered_insights.json"
         emails_file = OUTPUT_DIR / f"Kuvera_stakeholder_emails_{today_str}.json"
         
