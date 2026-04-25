@@ -249,24 +249,21 @@
         }
 
         async function fetchPulse() {
-            const statusEl = document.getElementById('connection-status');
             const statusText = document.getElementById('status-bar');
             try {
                 const response = await fetch(`${BACKEND_URL}/mcp/latest-results`);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
                 
-                statusEl.style.color = "#00FF00";
                 const lastUpdated = data.last_updated ? new Date(data.last_updated).toLocaleString() : "Never";
-                statusText.innerHTML = `● Live | Last Synchronized: ${lastUpdated}`;
+                statusText.innerHTML = `<span id="connection-status" style="color: #00FF00;">●</span> Live | Last Synchronized: ${lastUpdated}`;
                 
                 renderThemes(data.insights.local_clusters);
                 renderActions(data.insights.action_ideas);
                 renderDrafts(data.emails);
                 document.getElementById('json-raw').textContent = JSON.stringify(data.insights || {}, null, 2);
             } catch (err) {
-                statusEl.style.color = "#FF0000";
-                statusText.innerHTML = `● Connection Failed | ${err.message}`;
+                statusText.innerHTML = `<span id="connection-status" style="color: #FF0000;">●</span> Connection Failed | ${err.message}`;
             }
         }
 
