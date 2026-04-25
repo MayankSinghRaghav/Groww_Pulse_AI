@@ -176,6 +176,9 @@
         <div id="status-bar" style="font-size: 13px; margin-top: 10px; opacity: 0.8; font-weight: 300;">
             <span id="connection-status" style="color: #FFCC00;">●</span> Connecting to Insights Engine...
         </div>
+        <button id="run-btn" onclick="triggerPulse()" style="margin-top: 20px; background: var(--brand-cyan); border: none; padding: 12px 24px; border-radius: 8px; font-weight: 800; cursor: pointer; font-family: 'Outfit'; box-shadow: 0 4px 15px rgba(0,209,255,0.3); transition: all 0.2s ease;">
+            🚀 GENERATE NEW PULSE
+        </button>
     </header>
     
     <div class="container">
@@ -183,20 +186,20 @@
             <div id="themes-container">
                 <div class="section-title">Critical Feedback Themes</div>
                 <div class="card" style="text-align: center; color: #999;">
-                    Syncing with AI backend...
+                    Connecting to AI...
                 </div>
             </div>
 
             <div>
                 <div class="section-title">Action Roadmap</div>
                 <div id="actions-container" class="action-card">
-                    <div class="action-item">Analyzing roadmap...</div>
+                    <div class="action-item">Preparing insights...</div>
                 </div>
 
                 <div class="section-title">Stakeholder Drafts</div>
                 <div id="drafts-container">
                     <div class="card" style="text-align: center; color: #999; font-size: 14px;">
-                        Preparing stakeholder briefings...
+                        Loading briefings...
                     </div>
                 </div>
             </div>
@@ -214,6 +217,36 @@
         const DEFAULT_BACKEND = "https://kuvera-pulse.onrender.com"; 
         const params = new URLSearchParams(window.location.search);
         const BACKEND_URL = params.get('backend') || DEFAULT_BACKEND;
+
+        async function triggerPulse() {
+            const btn = document.getElementById('run-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "⌛ ANALYZING REVIEWS (2 MINS)...";
+            btn.disabled = true;
+            btn.style.opacity = "0.5";
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/mcp/run-weekly-pulse`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ app_name: "Kuvera", weeks: 8 })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `Server Error ${response.status}`);
+                }
+                
+                alert("✅ Pulse Generation Successful! Refreshing dashboard...");
+                await fetchPulse();
+            } catch (err) {
+                alert(`❌ Pulse Failed: ${err.message}\n\nACTION: Ensure GROQ_API_KEY is set in your Render Service -> Environment.`);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.style.opacity = "1";
+            }
+        }
 
         async function fetchPulse() {
             const statusEl = document.getElementById('connection-status');
@@ -233,7 +266,7 @@
                 document.getElementById('json-raw').textContent = JSON.stringify(data.insights || {}, null, 2);
             } catch (err) {
                 statusEl.style.color = "#FF0000";
-                statusText.innerHTML = `● Offline | ${err.message} | <a href="?backend=http://localhost:8000" style="color:#00D1FF">Try Local</a>`;
+                statusText.innerHTML = `● Connection Failed | ${err.message}`;
             }
         }
 
@@ -241,7 +274,7 @@
             const container = document.getElementById('themes-container');
             container.innerHTML = '<div class="section-title">Critical Feedback Themes</div>';
             if (!clusters || Object.keys(clusters).length === 0) {
-                container.innerHTML += '<div class="card">No data available. Run the pipeline first.</div>';
+                container.innerHTML += '<div class="card">No data available. Click "Generate New Pulse" to begin.</div>';
                 return;
             }
             Object.entries(clusters).sort((a,b) => b[1].volume - a[1].volume).slice(0, 3).forEach(([theme, data]) => {
@@ -259,12 +292,20 @@
 
         function renderActions(ideas) {
             const container = document.getElementById('actions-container');
-            container.innerHTML = (ideas || []).map(idea => `<div class="action-item">${idea}</div>`).join('');
+            if (!ideas || ideas.length === 0) {
+                container.innerHTML = '<div class="action-item">Run pulse to see roadmap.</div>';
+                return;
+            }
+            container.innerHTML = ideas.map(idea => `<div class="action-item">${idea}</div>`).join('');
         }
 
         function renderDrafts(emails) {
             const container = document.getElementById('drafts-container');
-            container.innerHTML = (emails || []).map(draft => `
+            if (!emails || emails.length === 0) {
+                container.innerHTML = '<div class="card" style="text-align:center; color:#999;">Run pulse to generate drafts.</div>';
+                return;
+            }
+            container.innerHTML = emails.map(draft => `
                 <div class="card stakeholder-card">
                     <h4 style="margin: 0 0 10px; font-size: 16px;">${draft.role}</h4>
                     <p style="font-size: 12px; color: #636E72; margin-bottom: 15px;">${draft.subject}</p>
