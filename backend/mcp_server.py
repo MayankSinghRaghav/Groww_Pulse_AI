@@ -80,16 +80,16 @@ async def health_check():
 async def run_weekly_pulse(request: WeeklyPulseRequest):
     logger.info(f"🚀 Starting weekly pulse for {request.app_name} (Last {request.weeks} weeks)")
     
-    # Lazy-load tools to ensure server starts regardless of tool-level import issues
-    from tools.review_ingestion import run_ingestion_pipeline
-    from tools.theme_clustering import run_clustering_pipeline
-    from tools.insight_generation import run_insight_generation
-    from tools.email_draft import run_email_drafting
-    from tools.report_html import generate_report_html
-    from config.settings import OUTPUT_DIR, APP_NAME
-    import json
-
     try:
+        # Lazy-load tools to ensure server starts regardless of tool-level import issues
+        from tools.review_ingestion import run_ingestion_pipeline
+        from tools.theme_clustering import run_clustering_pipeline
+        from tools.insight_generation import run_insight_generation
+        from tools.email_draft import run_email_drafting
+        from tools.report_html import generate_report_html
+        from config.settings import OUTPUT_DIR, APP_NAME
+        import json
+
         # Phase 2: Ingestion
         logger.info("Executing Phase 2: Ingestion...")
         run_ingestion_pipeline()
