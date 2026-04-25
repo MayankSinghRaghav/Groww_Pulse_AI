@@ -52,6 +52,11 @@ class WeeklyPulseRequest(BaseModel):
     weeks: int = 8
     recipient_role: Optional[str] = None
 
+class SendEmailRequest(BaseModel):
+    role: str  # "Product Team", "Support Team", "Leadership"
+    recipient_email: str
+    sender_name: Optional[str] = "Kuvera Pulse AI Engine"
+
 @app.get("/mcp/latest-results")
 async def get_latest_results():
     from config.settings import OUTPUT_DIR, APP_NAME
@@ -97,6 +102,71 @@ async def download_note(filename: str):
         filename=filename,
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+@app.post("/mcp/send-email")
+def send_email_with_pdf(request: SendEmailRequest):
+    """Gmail MCP Tool: Sends a role-specific pulse note email with PDF attached via SMTP."""
+    import smtplib
+    import os
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.application import MIMEApplication
+    from config.settings import OUTPUT_DIR
+
+    smtp_email = os.getenv("SMTP_EMAIL")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+
+    if not smtp_email or not smtp_password:
+        raise HTTPException(status_code=500, detail="SMTP credentials not configured. Set SMTP_EMAIL and SMTP_PASSWORD in Render environment.")
+
+    # Find the PDF for this role
+    today_str = datetime.datetime.now().strftime("%Y%m%d")
+    pdf_filename = f"Kuvera_Pulse_{request.role.replace(' ', '_')}_{today_str}.pdf"
+    pdf_path = OUTPUT_DIR / pdf_filename
+
+    if not pdf_path.exists():
+        raise HTTPException(status_code=404, detail=f"PDF note for '{request.role}' not found. Please run the pulse first.")
+
+    week_date = datetime.datetime.now().strftime("%B %d, %Y")
+    subject = f"[Kuvera Weekly Pulse] {week_date} — {request.role} Briefing"
+
+    # Short email body
+    role_intros = {
+        "Product Team": "Hi team,\n\nThis week's Kuvera Pulse Note is attached. It highlights the top engineering pain points from recent Play Store reviews, along with recommended sprint items.",
+        "Support Team": "Hi Support team,\n\nThis week's Kuvera Pulse Note is attached. It covers the top escalation themes and agent talking points for this week.",
+        "Leadership": "Hi,\n\nThis week's Kuvera Pulse Note is attached. It summarises the most critical sentiment signals and strategic recommendations."
+    }
+    body_text = role_intros.get(request.role, "Please find this week's Kuvera Pulse Note attached.")
+    body_text += f"\n\nThe note covers:\n  • Top 3 critical feedback themes\n  • 3 real user quotes\n  • 3 recommended actions for your team\n\nRegards,\n{request.sender_name}"
+
+    # Build the email
+    msg = MIMEMultipart()
+    msg["From"] = f"{request.sender_name} <{smtp_email}>"
+    msg["To"] = request.recipient_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body_text, "plain"))
+
+    # Attach PDF
+    with open(pdf_path, "rb") as f:
+        pdf_data = f.read()
+    pdf_attachment = MIMEApplication(pdf_data, _subtype="pdf")
+    pdf_attachment.add_header("Content-Disposition", "attachment", filename=pdf_filename)
+    msg.attach(pdf_attachment)
+
+    # Send via Gmail SMTP
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(smtp_email, smtp_password)
+            server.sendmail(smtp_email, request.recipient_email, msg.as_string())
+        logger.info(f"Email sent to {request.recipient_email} for role '{request.role}'")
+        return {"status": "success", "message": f"Email with PDF note sent to {request.recipient_email}"}
+    except smtplib.SMTPAuthenticationError:
+        raise HTTPException(status_code=401, detail="Gmail authentication failed. Ensure SMTP_PASSWORD is a Gmail App Password (not your regular password). Enable 2FA and generate an App Password at myaccount.google.com/apppasswords")
+    except Exception as e:
+        logger.error(f"SMTP send failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
 
 
 @app.post("/mcp/run-weekly-pulse")
