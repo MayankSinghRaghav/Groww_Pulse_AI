@@ -27,7 +27,10 @@ LOG_DIR = Path(os.getenv("LOG_DIR", DATA_DIR / "logs"))
 
 # Ensure directories exist
 for directory in [RAW_REVIEWS_DIR, PROCESSED_DATA_DIR, OUTPUT_DIR, LOG_DIR]:
-    directory.mkdir(parents=True, exist_ok=True)
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        print(f"Warning: Could not create directory {directory}: {e}")
 
 # Analysis Settings
 REVIEW_WINDOW_WEEKS = 8

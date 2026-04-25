@@ -7,13 +7,19 @@ import logging
 from config.settings import LOG_DIR, LOG_LEVEL
 
 # Configure logging
+handlers = [logging.StreamHandler()]
+try:
+    if not LOG_DIR.exists():
+        LOG_DIR.mkdir(parents=True, exist_ok=True)
+    file_handler = logging.FileHandler(LOG_DIR / "mcp_server.log")
+    handlers.append(file_handler)
+except Exception as e:
+    print(f"Warning: Could not initialize FileHandler: {e}. Logging to console only.")
+
 logging.basicConfig(
     level=LOG_LEVEL,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_DIR / "mcp_server.log"),
-        logging.StreamHandler()
-    ]
+    handlers=handlers
 )
 logger = logging.getLogger("mcp_server")
 
