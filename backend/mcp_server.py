@@ -347,8 +347,11 @@ async def download_note(filename: str):
         except HTTPException:
             raise
         except Exception as e:
+            import traceback
+            error_detail = f"PDF generation failed: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
             logger.error(f"On-demand PDF generation failed: {e}")
-            raise HTTPException(status_code=404, detail=f"PDF not found and generation failed: {str(e)}. Please run the pulse first.")
+            logger.error(traceback.format_exc())
+            raise HTTPException(status_code=500, detail=error_detail)
         
         raise HTTPException(status_code=404, detail="PDF note not found. Please run the pulse first.")
     
