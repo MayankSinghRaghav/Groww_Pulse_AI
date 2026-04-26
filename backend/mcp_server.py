@@ -298,9 +298,56 @@ async def gmail_compose_url(role: str, recipient_email: str = "", request: Reque
 @app.get("/mcp/download-note/{filename}")
 async def download_note(filename: str):
     from config.settings import OUTPUT_DIR
+    import os
+    
     file_path = OUTPUT_DIR / filename
+    
+    # If PDF doesn't exist, try to generate it on-demand
     if not file_path.exists() or not filename.endswith(".pdf"):
+        try:
+            logger.info(f"PDF not found: {filename}, attempting on-demand generation...")
+            
+            # Load insights
+            insights_path = OUTPUT_DIR / "clustered_insights.json"
+            if not insights_path.exists():
+                raise HTTPException(status_code=404, detail="No insights data found. Please run the pulse first.")
+            
+            import json
+            with open(insights_path, 'r', encoding='utf-8') as f:
+                insights = json.load(f)
+            
+            # Extract role from filename
+            # Format: Kuvera_Pulse_Product_Team_20260426.pdf
+            parts = filename.replace('.pdf', '').split('_')
+            if len(parts) >= 4:
+                role_parts = parts[2:-1]  # Get everything between "Pulse" and the date
+                role = ' '.join(role_parts)
+                
+                # Generate PDF
+                from tools.pdf_note import generate_pdf_note
+                action_ideas = insights.get("action_ideas", [])
+                if isinstance(action_ideas, str):
+                    action_ideas = [action_ideas]
+                
+                generate_pdf_note(insights, role, action_ideas)
+                logger.info(f"Generated PDF on-demand: {filename}")
+                
+                # Check if it exists now
+                if file_path.exists():
+                    return FileResponse(
+                        path=str(file_path),
+                        media_type="application/pdf",
+                        filename=filename,
+                        headers={"Content-Disposition": f"attachment; filename={filename}"}
+                    )
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"On-demand PDF generation failed: {e}")
+            raise HTTPException(status_code=404, detail=f"PDF not found and generation failed: {str(e)}. Please run the pulse first.")
+        
         raise HTTPException(status_code=404, detail="PDF note not found. Please run the pulse first.")
+    
     return FileResponse(
         path=str(file_path),
         media_type="application/pdf",
