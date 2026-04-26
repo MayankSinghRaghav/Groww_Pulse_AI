@@ -120,6 +120,17 @@ async def health_check():
 
 # ==================== OAuth 2.0 Endpoints ====================
 
+@app.get("/mcp/export-token")
+async def export_token():
+    """Exports the current token.json as a string for use in GMAIL_TOKEN_JSON env var."""
+    from config.settings import OUTPUT_DIR
+    import os
+    token_path = Path("token.json")
+    if token_path.exists():
+        with open(token_path, "r") as f:
+            return {"gmail_token_json": f.read()}
+    return {"error": "No token found. Please login via /oauth/authorize first."}
+
 @app.get("/oauth/authorize")
 async def oauth_authorize():
     try:

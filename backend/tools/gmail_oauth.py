@@ -63,34 +63,51 @@ def save_credentials_file():
 
 
 def get_stored_credentials() -> Optional[Credentials]:
-    """Load stored credentials from token.json if they exist and are valid"""
-    if not TOKEN_FILE.exists():
-        logger.info("No stored credentials found")
+    """Load stored credentials from token.json or GMAIL_TOKEN_JSON environment variable"""
+    token_data = None
+    
+    # Check if token file exists first (Priority 1)
+    if TOKEN_FILE.exists():
+        try:
+            with open(TOKEN_FILE, 'r') as f:
+                token_data = json.load(f)
+        except Exception as e:
+            logger.error(f"Error reading token file: {e}")
+
+    # Fallback to environment variable (Priority 2 - for Render persistence)
+    if not token_data:
+        env_token = os.getenv("GMAIL_TOKEN_JSON")
+        if env_token:
+            try:
+                token_data = json.loads(env_token)
+                logger.info("Credentials loaded from GMAIL_TOKEN_JSON environment variable")
+            except Exception as e:
+                logger.error(f"Failed to parse GMAIL_TOKEN_JSON env var: {e}")
+
+    if not token_data:
+        logger.info("No stored credentials found in file or environment")
         return None
     
     try:
-        with open(TOKEN_FILE, 'r') as f:
-            token_data = json.load(f)
-        
         creds = Credentials.from_authorized_user_info(token_data, SCOPES)
         
         # Check if credentials are expired and need refresh
-        if creds.expired and creds.refresh_token:
+        if creds and creds.expired and creds.refresh_token:
             logger.info("Credentials expired, attempting refresh...")
             creds.refresh(Request())
-            # Save refreshed credentials
+            # Save refreshed credentials locally if possible
             save_credentials(creds)
             logger.info("Credentials refreshed successfully")
         
-        if creds.valid:
-            logger.info("Valid credentials loaded from storage")
+        if creds and creds.valid:
+            logger.info("Valid credentials loaded")
             return creds
         else:
-            logger.warning("Stored credentials are invalid")
+            logger.warning("Loaded credentials are invalid")
             return None
             
     except Exception as e:
-        logger.error(f"Error loading credentials: {e}")
+        logger.error(f"Error processing credentials: {e}")
         return None
 
 
