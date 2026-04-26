@@ -429,9 +429,7 @@
             <button id="run-btn" class="header-btn" onclick="triggerPulse()">
                 🚀 GENERATE NEW PULSE
             </button>
-            <button id="regen-pdfs-btn" class="header-btn secondary" onclick="regenerateAllPdfs()">
-                📄 REGENERATE PDFs
-            </button>
+
         </div>
     </header>
     
@@ -515,33 +513,7 @@
             }
         }
 
-        // ==================== Regenerate All PDFs ====================
-        async function regenerateAllPdfs() {
-            const btn = document.getElementById('regen-pdfs-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = "⌛ Generating PDFs...";
-            btn.disabled = true;
 
-            try {
-                const response = await fetch(`${BACKEND_URL}/mcp/generate-all-pdfs`);
-                if (!response.ok) {
-                    const err = await response.json();
-                    throw new Error(err.detail || `HTTP ${response.status}`);
-                }
-                const data = await response.json();
-                
-                const successCount = Object.values(data.results).filter(r => r.success).length;
-                showToast(`✅ Generated ${successCount}/3 PDFs successfully!`, successCount === 3 ? "success" : "warning");
-                
-                // Refresh the dashboard to update download links
-                await fetchPulse();
-            } catch (err) {
-                showToast(`❌ PDF generation failed: ${err.message}`, "error");
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
 
         // ==================== Fetch Latest Data ====================
         async function fetchPulse() {
