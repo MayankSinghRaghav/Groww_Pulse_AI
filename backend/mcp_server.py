@@ -61,6 +61,13 @@ class SendEmailRequest(BaseModel):
     recipient_email: str
     sender_name: Optional[str] = "Kuvera Pulse AI Engine"
 
+@app.get("/mcp/gmail-status")
+async def gmail_status():
+    """Checks if the user is authenticated with Gmail API."""
+    from tools.gmail_oauth import refresh_credentials_if_needed
+    creds = refresh_credentials_if_needed()
+    return {"authenticated": creds is not None and creds.valid}
+
 # ==================== Results Endpoints ====================
 
 @app.get("/mcp/latest-results")
@@ -236,6 +243,33 @@ async def gmail_compose_endpoint(role: str, recipient_email: str = "", request: 
     backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
     _ensure_pdf_exists(role)
     return generate_gmail_compose_url(role, recipient_email, backend_url)
+
+@app.get("/mcp/generate-pdf")
+async def generate_pdf_endpoint(role: str = "Product Team"):
+    from config.settings import OUTPUT_DIR
+    import os
+    
+    valid_roles = ["Product Team", "Support Team", "Leadership"]
+    if role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
+    
+    success = _ensure_pdf_exists(role)
+    
+    today_str = datetime.datetime.now().strftime("%Y%m%d")
+    pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+    backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+    
+    if success:
+        file_path = OUTPUT_DIR / pdf_filename
+        return {
+            "status": "success",
+            "role": role,
+            "pdf_filename": pdf_filename,
+            "pdf_size_bytes": file_path.stat().st_size,
+            "download_url": f"{backend_url}/mcp/download-note/{pdf_filename}"
+        }
+    else:
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF for {role}")
 
 # ==================== PDF & Pulse Helpers ====================
 
