@@ -259,8 +259,15 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: Any, output_
         
         # If we have too many, take the first 3. If too few, add placeholders.
         actions = clean_actions[:3]
+        placeholders = [
+            f"Review recent {role.lower()} feedback for emerging patterns.",
+            f"Coordinate with cross-functional teams on {role.lower()} priorities.",
+            f"Audit current {role.lower()} workflows for efficiency gains."
+        ]
+        p_idx = 0
         while len(actions) < 3:
-            actions.append(f"Monitor {role.lower()} related signals and prioritize accordingly.")
+            actions.append(placeholders[p_idx])
+            p_idx += 1
 
         ctx = ROLE_CONTEXT.get(role, ROLE_CONTEXT["Leadership"])
 

@@ -13,7 +13,7 @@ logger = logging.getLogger("review_ingestion")
 spell = None
 
 # Kuvera app identifiers (Updated after CRED acquisition rebrand)
-PLAY_STORE_APP_ID = "com.gooogle.android.kuvera.app"  # Verified working 2026-04-26
+PLAY_STORE_APP_ID = "in.kuvera.app"  # Corrected from typo: in.kuvera.app
 APP_STORE_APP_NAME = "kuvera"
 APP_STORE_APP_ID = "1329701793"  # Correct ID from iTunes lookup
 

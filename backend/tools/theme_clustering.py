@@ -191,11 +191,23 @@ def run_clustering_pipeline(app_name: str = "Kuvera") -> Dict[str, Any]:
             }
         },
         "advanced_insights": {},
-        "action_ideas": [
-            "Implement OTP auto-read for faster onboarding",
-            "Audit document compression logic to fix KYC upload failures",
-            "Add real-time SIP mandate status tracker in profile"
-        ]
+        "action_ideas": {
+            "Product Team": [
+                "Audit document compression logic to fix KYC upload failures",
+                "Implement OTP auto-read for faster onboarding",
+                "Add real-time SIP mandate status tracker in profile"
+            ],
+            "Support Team": [
+                "Update empathy scripts for KYC delay escalations",
+                "Brief agents on known login issues with older Android versions",
+                "Prepare FAQ for new multi-asset portfolio features"
+            ],
+            "Leadership": [
+                "Prioritize KYC stability to reduce user churn",
+                "Evaluate onboarding conversion funnel for drop-offs",
+                "Monitor sentiment impact of recent CRED integration branding"
+            ]
+        }
     }
 
     try:
