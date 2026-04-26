@@ -33,7 +33,7 @@ def generate_gmail_compose_url(role: str, recipient_email: str = "", backend_url
     pdf_exists = pdf_path.exists()
     
     # Subject line
-    subject = f"[Kuvera Weekly Pulse] {week_date} — {role} Briefing"
+    subject = f"Weekly Kuvera Pulse for {role}"
     
     # Email body with PDF download link
     role_intros = {
@@ -48,20 +48,10 @@ def generate_gmail_compose_url(role: str, recipient_email: str = "", backend_url
     if pdf_exists:
         body = f"""{body_intro}
 
-⚠️ IMPORTANT: Gmail compose URLs cannot directly attach files. Please follow these steps:
+📎 Access Weekly Briefing: {pdf_download_url}
 
-1. Download the PDF note from this link:
-   {pdf_download_url}
-
-2. Attach the downloaded PDF to this email manually
-
-3. Enter the recipient email address
-
-4. Click Send
-
----
 This note covers:
-  • Top 3 critical feedback themes
+  • Top 3 critical user-feedback themes
   • 3 real user quotes
   • 3 recommended actions for your team
 
