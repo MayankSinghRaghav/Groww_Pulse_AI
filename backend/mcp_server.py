@@ -336,7 +336,9 @@ def _ensure_pdf_exists(role: str) -> bool:
     pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
     file_path = OUTPUT_DIR / pdf_filename
     
-    if file_path.exists() and file_path.stat().st_size > 500:
+    # If PDF exists and is a reasonable size (e.g. > 2KB), assume it's good.
+    # We increased this because empty PDFs with just headers are around 1KB.
+    if file_path.exists() and file_path.stat().st_size > 2048:
         return True
     
     try:
@@ -608,6 +610,15 @@ def run_weekly_pulse(request: WeeklyPulseRequest):
         from tools.pdf_note import generate_all_pdf_notes
         from config.settings import OUTPUT_DIR, APP_NAME
         import json
+
+        # Cleanup old PDFs to force regeneration
+        import glob
+        from config.settings import OUTPUT_DIR
+        old_pdfs = glob.glob(str(OUTPUT_DIR / "*.pdf"))
+        for p in old_pdfs:
+            try: os.remove(p)
+            except: pass
+        logger.info(f"Cleaned up {len(old_pdfs)} old PDFs.")
 
         # Phase 2: Ingestion
         logger.info("Executing Phase 2: Ingestion...")

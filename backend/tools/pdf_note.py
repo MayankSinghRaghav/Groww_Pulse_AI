@@ -257,17 +257,21 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: Any, output_
             if cleaned and len(cleaned) > 5 and not cleaned.lower().startswith("based on"):
                 clean_actions.append(cleaned)
         
-        # If we have too many, take the first 3. If too few, add placeholders.
+        # If we have too many, take the first 3. 
         actions = clean_actions[:3]
-        placeholders = [
-            f"Review recent {role.lower()} feedback for emerging patterns.",
-            f"Coordinate with cross-functional teams on {role.lower()} priorities.",
-            f"Audit current {role.lower()} workflows for efficiency gains."
-        ]
-        p_idx = 0
-        while len(actions) < 3:
-            actions.append(placeholders[p_idx])
-            p_idx += 1
+        
+        # If we have only 1 action and it's long, treat it as a descriptive block
+        is_descriptive = len(actions) == 1 and len(actions[0]) > 60
+        
+        # If no actions, add diverse placeholders
+        if not actions:
+            actions = [
+                f"Review recent {role.lower()} feedback for emerging patterns and coordinate with cross-functional teams.",
+                f"Audit current {role.lower()} workflows for efficiency gains based on this week's trends.",
+                f"Coordinate a deep-dive into top feedback themes to prioritize technical fixes."
+            ]
+            is_descriptive = False
+
 
         ctx = ROLE_CONTEXT.get(role, ROLE_CONTEXT["Leadership"])
 
@@ -315,12 +319,18 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: Any, output_
         for q in all_quotes:
             pdf.quote_block(q, 0)
 
-        # 3 actions - Start on Page 2 for clarity and to avoid overlap
-        pdf.add_page()
-        pdf.set_y(40)
+        # 1 or more actions
         pdf.section_title(ctx["action_label"])
-        for i, action in enumerate(actions, 1):
-            pdf.action_item(i, action)
+        if is_descriptive:
+            # Single large block without number circle
+            pdf.set_font("Helvetica", "", 10)
+            pdf.set_text_color(*BRAND_DARK_GREY)
+            pdf.set_x(12)
+            pdf.multi_cell(186, 6, _sanitize(actions[0]))
+        else:
+            for i, action in enumerate(actions, 1):
+                pdf.action_item(i, action)
+
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         pdf.output(output_path)

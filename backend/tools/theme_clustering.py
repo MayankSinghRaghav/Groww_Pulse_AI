@@ -132,18 +132,19 @@ def generate_weekly_action_ideas(stats_report: Dict[str, Any], app_name: str) ->
     }
 
     for role, context in roles.items():
-        prompt = f"""You are a senior consultant for {app_name}. Based on this week's app review data, generate exactly 3 concrete action ideas specifically for the {role}.
+        prompt = f"""You are a senior strategic advisor for {app_name}. 
+        Based on this week's user feedback data, identify the SINGLE most critical action the {role} should take next week.
         
         {role} context: {context}
         
-        Data:
+        User Feedback Themes:
         {top_3_summary}
         
-        Format:
-        - Action Item 1
-        - Action Item 2
-        - Action Item 3
+        Requirement:
+        Provide one highly descriptive, unique, and actionable recommendation (3-4 sentences). 
+        Be extremely specific about what needs to be fixed and why it matters for {role}.
         """
+        
         try:
             chat_completion = client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
@@ -151,8 +152,8 @@ def generate_weekly_action_ideas(stats_report: Dict[str, Any], app_name: str) ->
                 temperature=0.3,
             )
             raw_text = chat_completion.choices[0].message.content.strip()
-            ideas = [i.strip('- ').strip('123. ') for i in raw_text.split('\n') if i.strip()]
-            role_actions[role] = [i for i in ideas if len(i) > 5][:3]
+            # Just keep the whole descriptive text as a single action
+            role_actions[role] = [raw_text]
         except Exception as e:
             logger.error(f"Error generating action ideas for {role}: {e}")
             role_actions[role] = [f"Monitor {role} related feedback", "Analyze top 3 themes for impact", "Draft response plan"]
