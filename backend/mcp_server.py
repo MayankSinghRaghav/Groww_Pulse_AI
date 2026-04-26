@@ -329,7 +329,8 @@ async def download_note(filename: str):
                 if isinstance(action_ideas, str):
                     action_ideas = [action_ideas]
                 
-                generate_pdf_note(insights, role, action_ideas)
+                # Generate PDF to the expected output path
+                generate_pdf_note(role, insights, action_ideas, str(file_path))
                 logger.info(f"Generated PDF on-demand: {filename}")
                 
                 # Check if it exists now
