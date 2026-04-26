@@ -459,9 +459,16 @@
             </div>
         </div>
 
-        <div class="section-title">Technical Pulse Data (JSON)</div>
-        <div class="card" style="background: #1E1E1E; color: #D4D4D4; font-family: 'Courier New', Courier, monospace; padding: 25px; overflow-x: auto; font-size: 12px; border: none;">
-            <pre id="json-raw">{}</pre>
+        <div class="debug-section">
+            <button class="btn-action btn-secondary" onclick="toggleDebugData()" style="margin-top: 40px; width: 100%; justify-content: center; background: rgba(0,0,0,0.03); color: var(--muted); border: 1px dashed rgba(0,0,0,0.1); border-radius: 12px;">
+                <span class="btn-text">🛠 View Technical Pulse Data (JSON)</span>
+            </button>
+            <div id="debug-data-container" style="display: none; margin-top: 20px;">
+                <div class="section-title">Technical Pulse Data (JSON)</div>
+                <div class="card" style="background: #1E1E1E; color: #D4D4D4; font-family: 'Courier New', Courier, monospace; padding: 25px; overflow-x: auto; font-size: 12px; border: none;">
+                    <pre id="json-raw">{}</pre>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -754,6 +761,19 @@
                     btn.classList.remove('loading');
                     btn.disabled = false;
                 }
+            }
+        }
+
+        // ==================== Toggle Debug Data ====================
+        function toggleDebugData() {
+            const container = document.getElementById('debug-data-container');
+            const isHidden = container.style.display === 'none';
+            container.style.display = isHidden ? 'block' : 'none';
+            
+            if (isHidden) {
+                setTimeout(() => {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
             }
         }
 
