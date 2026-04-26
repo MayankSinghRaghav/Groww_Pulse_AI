@@ -415,6 +415,9 @@
                 <a id="modal-download-link" href="#" target="_blank" class="btn-action btn-secondary" download>
                     ⬇ Download PDF
                 </a>
+                <a id="modal-word-link" href="#" target="_blank" class="btn-action btn-secondary" download style="background: #2b5797;">
+                    📘 Download Word
+                </a>
                 <button class="btn-action btn-primary" onclick="closePdfModal()">Close</button>
             </div>
         </div>
@@ -638,10 +641,15 @@
             const iframe = document.getElementById('pdf-iframe');
             const title = document.getElementById('modal-title');
             const downloadLink = document.getElementById('modal-download-link');
+            const wordLink = document.getElementById('modal-word-link');
             
             title.textContent = `${role} — Weekly Pulse Note`;
             iframe.src = pdfUrl;
             downloadLink.href = pdfUrl;
+            
+            // Set Word link
+            const wordUrl = pdfUrl.replace('/download-note/', '/download-word/').replace('.pdf', '.docx');
+            wordLink.href = wordUrl;
             
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';

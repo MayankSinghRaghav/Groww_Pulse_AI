@@ -207,11 +207,26 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: Any, output_
         while len(all_quotes) < 3:
             all_quotes.append("Users are experiencing friction with core app features after the recent update.")
 
-        # Role-specific actions
+        # Role-specific actions - Robust lookup
+        role_actions = []
         if isinstance(action_ideas, dict):
+            # Try exact match first
             role_actions = action_ideas.get(role, [])
+            # Fallback to case-insensitive match
+            if not role_actions:
+                for k, v in action_ideas.items():
+                    if k.lower() == role.lower():
+                        role_actions = v
+                        break
+            logger.info(f"Retrieved {len(role_actions)} actions for {role} from dictionary.")
         else:
             role_actions = action_ideas if isinstance(action_ideas, list) else [action_ideas]
+            logger.info(f"Retrieved {len(role_actions)} actions for {role} from list/other.")
+        
+        # DEBUG: Log the first action to see what it is
+        if role_actions:
+            logger.info(f"First action for {role}: {str(role_actions[0])[:50]}...")
+
 
         # Clean action_ideas — remove markdown bold markers and intro sentences
         clean_actions = []
@@ -225,8 +240,13 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: Any, output_
             
             # Clean formatting
             cleaned = idea.replace("**", "").strip()
-            # Remove leading numbers like "1. "
-            cleaned = re.sub(r'^\d+[\.\)]\s*', '', cleaned)
+            # Remove leading numbers like "1. " or "Point 1:"
+            cleaned = re.sub(r'^(Point|Item|Action)?\s*\d+[\.\):]\s*', '', cleaned, flags=re.IGNORECASE)
+            
+            # CRITICAL: Skip if the cleaned text is JUST a role name
+            if cleaned.lower() in ["product team", "support team", "leadership"]:
+                logger.warning(f"Skipping action item that is just a role name: {cleaned}")
+                continue
             
             # Ensure the text refers to the CURRENT role, not others
             if role == "Leadership":
@@ -234,7 +254,7 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: Any, output_
             elif role == "Support Team":
                 cleaned = cleaned.replace("product team", "support staff")
             
-            if cleaned and len(cleaned) > 5:
+            if cleaned and len(cleaned) > 5 and not cleaned.lower().startswith("based on"):
                 clean_actions.append(cleaned)
         
         # If we have too many, take the first 3. If too few, add placeholders.
@@ -304,14 +324,14 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: Any, output_
         return False
 
 
-def generate_all_pdf_notes(insights_data: dict, action_ideas: list) -> Dict[str, str]:
+def generate_all_pdf_notes(insights_data: dict, action_ideas: Any) -> Dict[str, str]:
     """Generate PDF notes for all 3 roles. Returns {role: filepath}."""
     today_str = datetime.datetime.now().strftime("%Y%m%d")
     paths = {}
     for role in ["Product Team", "Support Team", "Leadership"]:
         filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
         output_path = str(OUTPUT_DIR / filename)
-        success = generate_pdf_note(role, insights_data, list(action_ideas), output_path)
+        success = generate_pdf_note(role, insights_data, action_ideas, output_path)
         if success:
             paths[role] = output_path
     return paths

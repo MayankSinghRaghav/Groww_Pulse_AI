@@ -634,6 +634,58 @@ def run_weekly_pulse(request: WeeklyPulseRequest):
     except Exception as e:
         logger.error(f"❌ Pipeline Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+@app.get("/mcp/download-word/{filename}")
+async def download_word(filename: str):
+    from config.settings import OUTPUT_DIR
+    import os
+    import json
+    
+    file_path = OUTPUT_DIR / filename
+    
+    # If Word doc doesn't exist, try to generate it on-demand
+    if not file_path.exists() or file_path.stat().st_size < 100:
+        if not filename.endswith(".docx"):
+            raise HTTPException(status_code=404, detail="Invalid file type. Only .docx files are allowed.")
+        
+        try:
+            logger.info(f"Word doc not found or empty: {filename}, attempting on-demand generation...")
+            
+            # Extract role from filename
+            # Format: Kuvera_Pulse_Product_Team_20260426.docx
+            parts = filename.replace('.docx', '').split('_')
+            if len(parts) >= 4:
+                role_parts = parts[2:-1] 
+                role = ' '.join(role_parts)
+                
+                # Get insights
+                insights_path = OUTPUT_DIR / "clustered_insights.json"
+                if not insights_path.exists():
+                    raise HTTPException(status_code=404, detail="Pulse data not found. Please run the pulse first.")
+                    
+                with open(insights_path, 'r', encoding='utf-8') as f:
+                    insights = json.load(f)
+                
+                from tools.word_note import generate_word_note
+                action_ideas = insights.get("action_ideas", {})
+                
+                success = generate_word_note(role, insights, action_ideas, str(file_path))
+                
+                if success and file_path.exists():
+                    return FileResponse(
+                        path=str(file_path),
+                        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        filename=filename
+                    )
+        except Exception as e:
+            logger.error(f"Word generation failed: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
+    return FileResponse(
+        path=str(file_path),
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename=filename
+    )
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
