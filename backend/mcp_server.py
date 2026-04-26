@@ -303,7 +303,10 @@ async def download_note(filename: str):
     file_path = OUTPUT_DIR / filename
     
     # If PDF doesn't exist, try to generate it on-demand
-    if not file_path.exists() or not filename.endswith(".pdf"):
+    if not file_path.exists():
+        if not filename.endswith(".pdf"):
+            raise HTTPException(status_code=404, detail="Invalid file type. Only PDF files are allowed.")
+        
         try:
             logger.info(f"PDF not found: {filename}, attempting on-demand generation...")
             
