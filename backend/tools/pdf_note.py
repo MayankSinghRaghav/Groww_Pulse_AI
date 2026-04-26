@@ -43,6 +43,28 @@ ROLE_CONTEXT = {
 }
 
 
+def _sanitize(text):
+    """Replace non-Latin-1 characters so fpdf2 Helvetica can render them."""
+    replacements = {
+        '\u2605': '*',
+        '\u2606': '*',
+        '\u2014': '-',
+        '\u2013': '-',
+        '\u2018': "'",
+        '\u2019': "'",
+        '\u201C': '"',
+        '\u201D': '"',
+        '\u2026': '...',
+        '\u2022': '-',
+        '\u00b7': '-',
+        '\u2003': ' ',
+        '\u00a0': ' ',
+    }
+    for char, replacement in replacements.items():
+        text = text.replace(char, replacement)
+    return text.encode('latin-1', 'replace').decode('latin-1')
+
+
 class KuveraPDF(FPDF):
     def header(self):
         # Black header bar
@@ -80,10 +102,12 @@ class KuveraPDF(FPDF):
         self.set_xy(20, self.get_y())
         self.set_font("Helvetica", "B", 11)
         self.set_text_color(*BRAND_DARK_GREY)
-        self.cell(0, 7, title.upper(), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.cell(0, 7, _sanitize(title.upper()), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         self.ln(2)
 
     def theme_card(self, rank: int, name: str, volume: int, rating: float, label: str):
+        name = _sanitize(name)
+        label = _sanitize(label)
         x = self.get_x()
         y = self.get_y()
         card_h = 16
@@ -117,11 +141,12 @@ class KuveraPDF(FPDF):
         self.set_font("Helvetica", "B", 9)
         self.set_text_color(*BRAND_DARK_GREY)
         self.set_xy(140, y + 2)
-        self.cell(58, 6, f"{volume} reviews  |  {rating}/5 ★", align="R")
+        self.cell(58, 6, _sanitize(f"{volume} reviews  |  {rating}/5 *"), align="R")
 
         self.set_xy(12, y + card_h + 2)
 
     def quote_block(self, quote: str, index: int):
+        quote = _sanitize(quote)
         self.set_fill_color(235, 250, 255)
         y = self.get_y()
         # Left accent
@@ -132,16 +157,18 @@ class KuveraPDF(FPDF):
         self.set_xy(18, y)
         self.set_fill_color(240, 252, 255)
         # Calculate height
-        lines = self.get_string_width(f'"{quote}"') // 170 + 1
+        quoted_text = '"' + quote + '"'
+        lines = self.get_string_width(quoted_text) // 170 + 1
         h = max(10, int(lines) * 6 + 4)
         self.rect(12, y, 186, h, 'F')
         self.set_fill_color(*BRAND_CYAN)
         self.rect(12, y, 3, h, 'F')
         self.set_xy(18, y + 2)
-        self.multi_cell(178, 5, f'"{quote}"')
+        self.multi_cell(178, 5, quoted_text)
         self.ln(2)
 
     def action_item(self, index: int, text: str):
+        text = _sanitize(text)
         y = self.get_y()
         self.set_fill_color(*BRAND_CYAN)
         self.ellipse(13, y + 2, 5, 5, 'F')
@@ -152,7 +179,7 @@ class KuveraPDF(FPDF):
         self.set_font("Helvetica", "", 10)
         self.set_text_color(*BRAND_DARK_GREY)
         self.set_xy(22, y)
-        self.multi_cell(176, 6, text)
+        self.multi_cell(176, 6, _sanitize(text))
         self.ln(1)
 
 
@@ -163,13 +190,30 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
         sorted_themes = sorted(local_clusters.items(), key=lambda x: x[1].get("volume", 0), reverse=True)[:3]
         total_reviews = sum(d.get("volume", 0) for _, d in local_clusters.items())
 
+        # If no clusters exist, create placeholder themes so the PDF is still useful
+        if not sorted_themes:
+            sorted_themes = [
+                ("App Performance & Stability", {"volume": 0, "average_rating": 0, "representative_quotes": ["Data pending - please run a fresh weekly pulse to populate insights."]}),
+                ("User Experience & Navigation", {"volume": 0, "average_rating": 0, "representative_quotes": ["No review data available yet for this cycle."]}),
+                ("Feature Requests & Improvements", {"volume": 0, "average_rating": 0, "representative_quotes": ["Awaiting new review data ingestion."]}),
+            ]
+            total_reviews = 0
+
         # Collect top 3 quotes
         all_quotes = []
         for _, data in sorted_themes:
             all_quotes.extend(data.get("representative_quotes", []))
-        all_quotes = [q for q in all_quotes if q and len(q.strip()) > 15][:3]
+        all_quotes = [q for q in all_quotes if q and len(q.strip()) > 10][:3]
         while len(all_quotes) < 3:
             all_quotes.append("Users are experiencing friction with core app features after the recent update.")
+
+        # Clean action_ideas — remove markdown bold markers for PDF rendering
+        clean_actions = []
+        for idea in action_ideas:
+            cleaned = idea.replace("**", "").strip()
+            if cleaned and len(cleaned) > 5:
+                clean_actions.append(cleaned)
+        action_ideas = clean_actions
 
         while len(action_ideas) < 3:
             action_ideas.append("Review top-reported issues and prioritize in next sprint.")
@@ -186,10 +230,10 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
         pdf.set_font("Helvetica", "B", 14)
         pdf.set_text_color(*BRAND_DARK_GREY)
         pdf.set_xy(12, 38)
-        pdf.cell(0, 8, f"Weekly Pulse Note - {role}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.cell(0, 8, _sanitize(f"Weekly Pulse Note - {role}"), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         pdf.set_font("Helvetica", "I", 9)
         pdf.set_text_color(*TEXT_MUTED)
-        pdf.cell(0, 5, ctx["tagline"], new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        pdf.cell(0, 5, _sanitize(ctx["tagline"]), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
         # Stats bar
         pdf.ln(3)
@@ -207,12 +251,12 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
         pdf.set_font("Helvetica", "", 10)
         pdf.set_text_color(*BRAND_DARK_GREY)
         pdf.set_x(12)
-        pdf.multi_cell(186, 6, ctx["intro"])
+        pdf.multi_cell(186, 6, _sanitize(ctx["intro"]))
 
         # Top 3 themes
         pdf.section_title(f"Top 3 {ctx['theme_label']}s This Week")
         for i, (name, data) in enumerate(sorted_themes, 1):
-            pdf.theme_card(i, name, data.get("volume", 0), data.get("average_rating", 0), ctx["theme_label"])
+            pdf.theme_card(i, _sanitize(name), data.get("volume", 0), data.get("average_rating", 0), ctx["theme_label"])
         pdf.ln(4)
 
         # 3 user quotes

@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import datetime
 import logging
+import os
 from config.settings import LOG_DIR, LOG_LEVEL
 # FORCE RESOLVE DEPENDENCY CONFLICT ON RENDER
 import subprocess
@@ -61,11 +62,10 @@ class SendEmailRequest(BaseModel):
 @app.get("/mcp/latest-results")
 async def get_latest_results():
     from config.settings import OUTPUT_DIR, APP_NAME
+    import glob
     
     try:
         insights_path = OUTPUT_DIR / "clustered_insights.json"
-        today_str = datetime.datetime.now().strftime("%Y%m%d")
-        emails_path = OUTPUT_DIR / f"{APP_NAME}_stakeholder_emails_{today_str}.json"
         
         results = {
             "insights": {},
@@ -78,9 +78,39 @@ async def get_latest_results():
                 results["insights"] = json.load(f)
                 results["last_updated"] = datetime.datetime.fromtimestamp(insights_path.stat().st_mtime).isoformat()
         
-        if emails_path.exists():
-            with open(emails_path, 'r', encoding='utf-8') as f:
-                results["emails"] = json.load(f)
+        # Find the MOST RECENT stakeholder emails file (not just today's)
+        email_files = sorted(
+            glob.glob(str(OUTPUT_DIR / f"{APP_NAME}_stakeholder_emails_*.json")),
+            key=lambda f: os.path.getmtime(f),
+            reverse=True
+        )
+        
+        emails_loaded = False
+        for email_file in email_files:
+            try:
+                with open(email_file, 'r', encoding='utf-8') as f:
+                    emails_data = json.load(f)
+                    if emails_data and len(emails_data) > 0:
+                        # Ensure every email draft has a download_link
+                        import os as _os
+                        backend_url = _os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+                        for draft in emails_data:
+                            if "download_link" not in draft:
+                                today_str = datetime.datetime.now().strftime("%Y%m%d")
+                                role = draft.get("role", "Leadership")
+                                pdf_fn = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+                                draft["download_link"] = f"{backend_url}/mcp/download-note/{pdf_fn}"
+                                draft["pdf_filename"] = pdf_fn
+                        results["emails"] = emails_data
+                        emails_loaded = True
+                        logger.info(f"Loaded email drafts from: {email_file}")
+                        break
+            except Exception as e:
+                logger.warning(f"Failed to read {email_file}: {e}")
+                continue
+        
+        if not emails_loaded:
+            logger.info("No stakeholder email files found.")
                 
         return results
     except Exception as e:
@@ -284,6 +314,9 @@ async def gmail_compose_url(role: str, recipient_email: str = "", request: Reque
         if request and hasattr(request, 'base_url') and "onrender.com" in str(request.base_url):
             backend_url = str(request.base_url).rstrip('/')
         
+        # Try to generate PDF on-demand if it doesn't exist
+        _ensure_pdf_exists(role)
+        
         result = generate_gmail_compose_url(role, recipient_email, backend_url)
         
         logger.info(f"Generated Gmail compose URL for role: {role}")
@@ -293,7 +326,109 @@ async def gmail_compose_url(role: str, recipient_email: str = "", request: Reque
         logger.error(f"Gmail compose URL generation error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate compose URL: {str(e)}")
 
+# ==================== Helper: Ensure PDF exists ====================
+
+def _ensure_pdf_exists(role: str) -> bool:
+    """Generate PDF on-demand for a given role if it doesn't exist. Returns True if PDF exists/was created."""
+    from config.settings import OUTPUT_DIR
+    
+    today_str = datetime.datetime.now().strftime("%Y%m%d")
+    pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+    file_path = OUTPUT_DIR / pdf_filename
+    
+    if file_path.exists() and file_path.stat().st_size > 500:
+        return True
+    
+    try:
+        logger.info(f"PDF not found or empty for {role}, generating on-demand...")
+        
+        insights_path = OUTPUT_DIR / "clustered_insights.json"
+        if not insights_path.exists():
+            logger.warning("No clustered_insights.json found — cannot generate PDF.")
+            return False
+        
+        with open(insights_path, 'r', encoding='utf-8') as f:
+            insights = json.load(f)
+        
+        from tools.pdf_note import generate_pdf_note
+        action_ideas = insights.get("action_ideas", [])
+        if isinstance(action_ideas, str):
+            action_ideas = [action_ideas]
+        
+        success = generate_pdf_note(role, insights, action_ideas, str(file_path))
+        if success and file_path.exists():
+            logger.info(f"On-demand PDF generated: {pdf_filename} ({file_path.stat().st_size} bytes)")
+            return True
+        else:
+            logger.error(f"PDF generation returned False or file missing for {role}")
+            return False
+    except Exception as e:
+        import traceback
+        logger.error(f"On-demand PDF generation failed for {role}: {e}")
+        logger.error(traceback.format_exc())
+        return False
+
+
 # ==================== Existing Endpoints ====================
+
+@app.get("/mcp/generate-pdf")
+async def generate_pdf_endpoint(role: str = "Product Team"):
+    """
+    Explicitly generate a PDF for a given role on-demand.
+    Returns the PDF filename and download link.
+    """
+    from config.settings import OUTPUT_DIR
+    import os
+    
+    valid_roles = ["Product Team", "Support Team", "Leadership"]
+    if role not in valid_roles:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
+    
+    success = _ensure_pdf_exists(role)
+    
+    today_str = datetime.datetime.now().strftime("%Y%m%d")
+    pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+    backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+    
+    if success:
+        file_path = OUTPUT_DIR / pdf_filename
+        return {
+            "status": "success",
+            "role": role,
+            "pdf_filename": pdf_filename,
+            "pdf_size_bytes": file_path.stat().st_size,
+            "download_url": f"{backend_url}/mcp/download-note/{pdf_filename}",
+            "message": f"PDF generated successfully for {role}"
+        }
+    else:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to generate PDF for {role}. Ensure the weekly pulse has been run at least once."
+        )
+
+@app.get("/mcp/generate-all-pdfs")
+async def generate_all_pdfs_endpoint():
+    """
+    Generate PDFs for all 3 roles on-demand.
+    """
+    import os
+    results = {}
+    backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+    
+    for role in ["Product Team", "Support Team", "Leadership"]:
+        success = _ensure_pdf_exists(role)
+        today_str = datetime.datetime.now().strftime("%Y%m%d")
+        pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+        results[role] = {
+            "success": success,
+            "pdf_filename": pdf_filename,
+            "download_url": f"{backend_url}/mcp/download-note/{pdf_filename}" if success else None
+        }
+    
+    return {
+        "status": "success" if all(r["success"] for r in results.values()) else "partial",
+        "results": results
+    }
 
 @app.get("/mcp/download-note/{filename}")
 async def download_note(filename: str):
@@ -303,21 +438,12 @@ async def download_note(filename: str):
     file_path = OUTPUT_DIR / filename
     
     # If PDF doesn't exist, try to generate it on-demand
-    if not file_path.exists():
+    if not file_path.exists() or file_path.stat().st_size < 500:
         if not filename.endswith(".pdf"):
             raise HTTPException(status_code=404, detail="Invalid file type. Only PDF files are allowed.")
         
         try:
-            logger.info(f"PDF not found: {filename}, attempting on-demand generation...")
-            
-            # Load insights
-            insights_path = OUTPUT_DIR / "clustered_insights.json"
-            if not insights_path.exists():
-                raise HTTPException(status_code=404, detail="No insights data found. Please run the pulse first.")
-            
-            import json
-            with open(insights_path, 'r', encoding='utf-8') as f:
-                insights = json.load(f)
+            logger.info(f"PDF not found or empty: {filename}, attempting on-demand generation...")
             
             # Extract role from filename
             # Format: Kuvera_Pulse_Product_Team_20260426.pdf
@@ -326,40 +452,31 @@ async def download_note(filename: str):
                 role_parts = parts[2:-1]  # Get everything between "Pulse" and the date
                 role = ' '.join(role_parts)
                 
-                # Generate PDF
-                from tools.pdf_note import generate_pdf_note
-                action_ideas = insights.get("action_ideas", [])
-                if isinstance(action_ideas, str):
-                    action_ideas = [action_ideas]
+                success = _ensure_pdf_exists(role)
                 
-                # Generate PDF to the expected output path
-                generate_pdf_note(role, insights, action_ideas, str(file_path))
-                logger.info(f"Generated PDF on-demand: {filename}")
-                
-                # Check if it exists now
-                if file_path.exists():
+                if success and file_path.exists():
                     return FileResponse(
                         path=str(file_path),
                         media_type="application/pdf",
                         filename=filename,
-                        headers={"Content-Disposition": f"attachment; filename={filename}"}
+                        headers={"Content-Disposition": f"inline; filename={filename}"}
                     )
         except HTTPException:
             raise
         except Exception as e:
             import traceback
-            error_detail = f"PDF generation failed: {str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+            error_detail = f"PDF generation failed: {str(e)}"
             logger.error(f"On-demand PDF generation failed: {e}")
             logger.error(traceback.format_exc())
             raise HTTPException(status_code=500, detail=error_detail)
         
-        raise HTTPException(status_code=404, detail="PDF note not found. Please run the pulse first.")
+        raise HTTPException(status_code=404, detail="PDF note could not be generated. Please run the pulse first.")
     
     return FileResponse(
         path=str(file_path),
         media_type="application/pdf",
         filename=filename,
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"inline; filename={filename}"}
     )
 
 @app.post("/mcp/send-email")

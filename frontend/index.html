@@ -4,16 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kuvera Pulse Dashboard</title>
+    <meta name="description" content="Kuvera Weekly Pulse Dashboard — AI-powered app review insights and stakeholder briefings.">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --brand-cyan: #00D1FF;
+            --brand-cyan-glow: rgba(0, 209, 255, 0.3);
             --brand-black: #0F0F0F;
             --text-main: #2D3436;
             --bg-light: #F4F7F6;
             --white: #FFFFFF;
             --glass: rgba(255, 255, 255, 0.95);
+            --muted: #636E72;
+            --success: #00B894;
+            --warning: #FDCB6E;
+            --danger: #D63031;
         }
+        
+        * { box-sizing: border-box; }
         
         body {
             font-family: 'Outfit', sans-serif;
@@ -71,6 +79,7 @@
             background: var(--brand-cyan);
             margin-right: 15px;
             border-radius: 4px;
+            flex-shrink: 0;
         }
         
         .card {
@@ -80,11 +89,12 @@
             margin-bottom: 25px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.03);
             border: 1px solid rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.07);
         }
         
         .theme-header {
@@ -133,28 +143,244 @@
             content: "✦";
             margin-right: 15px;
             color: #000;
+            flex-shrink: 0;
         }
         
         .stakeholder-card {
             border-left: 5px solid var(--brand-cyan);
         }
         
-        .btn-send {
-            background: var(--brand-black);
-            color: white;
-            padding: 12px 24px;
+        .btn-action {
+            padding: 12px 20px;
             border-radius: 8px;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             font-weight: 600;
-            margin-top: 15px;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-family: 'Outfit', sans-serif;
+            position: relative;
+            overflow: hidden;
         }
         
-        .btn-send:hover {
+        .btn-primary {
+            background: var(--brand-black);
+            color: white;
+        }
+        
+        .btn-primary:hover {
             background: var(--brand-cyan);
             color: black;
+        }
+        
+        .btn-secondary {
+            background: #636E72;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #2D3436;
+        }
+        
+        .btn-action:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-action .spinner {
+            display: none;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        .btn-action.loading .spinner {
+            display: inline-block;
+        }
+        
+        .btn-action.loading .btn-text {
+            opacity: 0.7;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s ease, slideOut 0.3s ease 3.7s forwards;
+            max-width: 400px;
+            font-family: 'Outfit', sans-serif;
+        }
+        
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: #0984E3; }
+        .toast.warning { background: #E17055; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(120%); opacity: 0; }
+        }
+        
+        /* Header buttons */
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .header-btn {
+            background: var(--brand-cyan);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: 'Outfit';
+            box-shadow: 0 4px 15px var(--brand-cyan-glow);
+            transition: all 0.2s ease;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .header-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--brand-cyan-glow);
+        }
+        
+        .header-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .header-btn.secondary {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            box-shadow: none;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .header-btn.secondary:hover {
+            background: rgba(255,255,255,0.25);
+            box-shadow: none;
+        }
+        
+        /* PDF Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--muted);
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        
+        .modal-close:hover {
+            background: #f0f0f0;
+        }
+        
+        .modal-body {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .modal-body iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         footer {
@@ -167,18 +393,46 @@
 
         @media (max-width: 768px) {
             .grid { grid-template-columns: 1fr; }
+            .modal { width: 95%; height: 80vh; }
         }
     </style>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <!-- PDF Preview Modal -->
+    <div class="modal-overlay" id="pdf-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">PDF Preview</h3>
+                <button class="modal-close" onclick="closePdfModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdf-iframe" src="about:blank"></iframe>
+            </div>
+            <div class="modal-footer">
+                <a id="modal-download-link" href="#" target="_blank" class="btn-action btn-secondary" download>
+                    ⬇ Download PDF
+                </a>
+                <button class="btn-action btn-primary" onclick="closePdfModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <header>
         <div class="logo">KUVERA <span>PULSE</span></div>
         <div id="status-bar" style="font-size: 13px; margin-top: 10px; opacity: 0.8; font-weight: 300;">
             <span id="connection-status" style="color: #FFCC00;">●</span> Connecting to Insights Engine...
         </div>
-        <button id="run-btn" onclick="triggerPulse()" style="margin-top: 20px; background: var(--brand-cyan); border: none; padding: 12px 24px; border-radius: 8px; font-weight: 800; cursor: pointer; font-family: 'Outfit'; box-shadow: 0 4px 15px rgba(0,209,255,0.3); transition: all 0.2s ease;">
-            🚀 GENERATE NEW PULSE
-        </button>
+        <div class="header-actions">
+            <button id="run-btn" class="header-btn" onclick="triggerPulse()">
+                🚀 GENERATE NEW PULSE
+            </button>
+            <button id="regen-pdfs-btn" class="header-btn secondary" onclick="regenerateAllPdfs()">
+                📄 REGENERATE PDFs
+            </button>
+        </div>
     </header>
     
     <div class="container">
@@ -218,6 +472,17 @@
         const params = new URLSearchParams(window.location.search);
         const BACKEND_URL = params.get('backend') || DEFAULT_BACKEND;
 
+        // ==================== Toast Notifications ====================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        // ==================== Pulse Generation ====================
         async function triggerPulse() {
             const btn = document.getElementById('run-btn');
             const originalText = btn.innerHTML;
@@ -237,10 +502,10 @@
                     throw new Error(errorData.detail || `Server Error ${response.status}`);
                 }
                 
-                alert("✅ Pulse Generation Successful! Refreshing dashboard...");
+                showToast("✅ Pulse generation completed! Refreshing...", "success");
                 await fetchPulse();
             } catch (err) {
-                alert(`❌ Pulse Failed: ${err.message}\n\nACTION: Ensure GROQ_API_KEY is set in your Render Service -> Environment.`);
+                showToast(`❌ Pulse failed: ${err.message}`, "error");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -248,6 +513,35 @@
             }
         }
 
+        // ==================== Regenerate All PDFs ====================
+        async function regenerateAllPdfs() {
+            const btn = document.getElementById('regen-pdfs-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = "⌛ Generating PDFs...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/mcp/generate-all-pdfs`);
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || `HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                
+                const successCount = Object.values(data.results).filter(r => r.success).length;
+                showToast(`✅ Generated ${successCount}/3 PDFs successfully!`, successCount === 3 ? "success" : "warning");
+                
+                // Refresh the dashboard to update download links
+                await fetchPulse();
+            } catch (err) {
+                showToast(`❌ PDF generation failed: ${err.message}`, "error");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // ==================== Fetch Latest Data ====================
         async function fetchPulse() {
             const statusText = document.getElementById('status-bar');
             try {
@@ -267,6 +561,7 @@
             }
         }
 
+        // ==================== Render Themes ====================
         function renderThemes(clusters) {
             const container = document.getElementById('themes-container');
             container.innerHTML = '<div class="section-title">Critical Feedback Themes</div>';
@@ -274,7 +569,6 @@
                 container.innerHTML += '<div class="card">No data available. Click "Generate New Pulse" to begin.</div>';
                 return;
             }
-            // Show ALL themes, sorted by volume
             Object.entries(clusters).sort((a,b) => b[1].volume - a[1].volume).forEach(([theme, data], index) => {
                 const isTop3 = index < 3;
                 container.innerHTML += `
@@ -289,6 +583,7 @@
             });
         }
 
+        // ==================== Render Actions ====================
         function renderActions(ideas) {
             const container = document.getElementById('actions-container');
             if (!ideas || ideas.length === 0) {
@@ -298,6 +593,7 @@
             container.innerHTML = ideas.map(idea => `<div class="action-item">${idea}</div>`).join('');
         }
 
+        // ==================== Render Drafts ====================
         function renderDrafts(emails) {
             const container = document.getElementById('drafts-container');
             if (!emails || emails.length === 0) {
@@ -305,70 +601,163 @@
                 return;
             }
             container.innerHTML = emails.map(draft => {
-                const pdfBtn = draft.download_link
-                    ? `<a href="${draft.download_link}" target="_blank" rel="noopener noreferrer" class="btn-send" style="background:#636E72;">📄 PDF Note</a>`
-                    : '';
+                const roleSlug = (draft.role || '').replace(/\s+/g, '-').toLowerCase();
                 return `
                 <div class="card stakeholder-card">
                     <h4 style="margin: 0 0 8px; font-size: 16px;">${draft.role}</h4>
                     <p style="font-size: 12px; color: #636E72; margin-bottom: 15px;">${draft.subject}</p>
                     <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                        <button onclick="openGmailCompose('${draft.role}')" class="btn-send" style="border:none; cursor:pointer;">✉ Compose in Gmail</button>
-                        ${pdfBtn}
+                        <button 
+                            id="pdf-btn-${roleSlug}" 
+                            class="btn-action btn-secondary" 
+                            onclick="viewPdfNote('${draft.role}')"
+                        >
+                            <span class="spinner"></span>
+                            <span class="btn-text">📄 PDF Note</span>
+                        </button>
+                        <button 
+                            id="gmail-btn-${roleSlug}" 
+                            class="btn-action btn-primary" 
+                            onclick="openGmailCompose('${draft.role}')"
+                        >
+                            <span class="spinner"></span>
+                            <span class="btn-text">✉ Compose in Gmail</span>
+                        </button>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // --- Gmail Compose: Opens Gmail with pre-filled content ---
-        function openGmailCompose(role) {
-            // Get recipient email from user
-            const recipient = prompt('Enter recipient email address (optional):');
+        // ==================== View PDF Note (with on-demand generation) ====================
+        async function viewPdfNote(role) {
+            const roleSlug = role.replace(/\s+/g, '-').toLowerCase();
+            const btn = document.getElementById(`pdf-btn-${roleSlug}`);
             
-            // Build the compose URL
-            const composeUrl = recipient 
-                ? `${BACKEND_URL}/mcp/gmail-compose?role=${encodeURIComponent(role)}&recipient_email=${encodeURIComponent(recipient)}`
-                : `${BACKEND_URL}/mcp/gmail-compose?role=${encodeURIComponent(role)}`;
+            if (btn) {
+                btn.classList.add('loading');
+                btn.disabled = true;
+            }
             
-            // Fetch the compose URL and open Gmail
-            fetch(composeUrl)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        if (!data.pdf_exists) {
-                            alert('⚠️ PDF note not found. Please run the weekly pulse first to generate the report.');
-                            return;
-                        }
-                        
-                        // Show instructions
-                        const instructions = `📧 Gmail Compose Instructions:
-
-1. Gmail compose window will open in a new tab
-2. Download the PDF from the link in the email body
-3. Attach the PDF to the email (drag & drop or use attachment button)
-4. Verify recipient email address
-5. Click Send
-
-PDF Download Link:
-${data.pdf_download_url}`;
-                        
-                        if (confirm(instructions + '\n\nClick OK to open Gmail compose window.')) {
-                            // Open Gmail compose URL in new window
-                            const gmailWindow = window.open(data.gmail_compose_url, '_blank');
-                            
-                            if (!gmailWindow || gmailWindow.closed || typeof gmailWindow.closed === 'undefined') {
-                                alert('⚠️ Pop-up blocked! Please allow pop-ups for this site and try again.');
-                            }
-                        }
-                    } else {
-                        alert('❌ Failed to generate Gmail compose URL: ' + data.message);
-                    }
-                })
-                .catch(err => {
-                    alert('❌ Error: ' + err.message);
-                });
+            try {
+                // Step 1: Ensure PDF is generated on the server
+                showToast(`Generating PDF for ${role}...`, 'info');
+                
+                const genResponse = await fetch(`${BACKEND_URL}/mcp/generate-pdf?role=${encodeURIComponent(role)}`);
+                
+                if (!genResponse.ok) {
+                    const err = await genResponse.json();
+                    throw new Error(err.detail || `Generation failed (HTTP ${genResponse.status})`);
+                }
+                
+                const genData = await genResponse.json();
+                const downloadUrl = genData.download_url || `${BACKEND_URL}/mcp/download-note/${genData.pdf_filename}`;
+                
+                showToast(`✅ PDF ready! (${(genData.pdf_size_bytes / 1024).toFixed(1)} KB)`, 'success');
+                
+                // Step 2: Open in modal viewer
+                openPdfModal(role, downloadUrl);
+                
+            } catch (err) {
+                showToast(`❌ PDF error: ${err.message}`, 'error');
+            } finally {
+                if (btn) {
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }
+            }
         }
 
+        // ==================== PDF Modal ====================
+        function openPdfModal(role, pdfUrl) {
+            const modal = document.getElementById('pdf-modal');
+            const iframe = document.getElementById('pdf-iframe');
+            const title = document.getElementById('modal-title');
+            const downloadLink = document.getElementById('modal-download-link');
+            
+            title.textContent = `${role} — Weekly Pulse Note`;
+            iframe.src = pdfUrl;
+            downloadLink.href = pdfUrl;
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePdfModal() {
+            const modal = document.getElementById('pdf-modal');
+            const iframe = document.getElementById('pdf-iframe');
+            
+            modal.classList.remove('active');
+            iframe.src = 'about:blank';
+            document.body.style.overflow = '';
+        }
+        
+        // Close modal on overlay click
+        document.getElementById('pdf-modal').addEventListener('click', function(e) {
+            if (e.target === this) closePdfModal();
+        });
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closePdfModal();
+        });
+
+        // ==================== Gmail Compose ====================
+        async function openGmailCompose(role) {
+            const roleSlug = role.replace(/\s+/g, '-').toLowerCase();
+            const btn = document.getElementById(`gmail-btn-${roleSlug}`);
+            
+            // Get recipient email from user
+            const recipient = prompt('Enter recipient email address (optional):');
+            if (recipient === null) return; // User cancelled
+            
+            if (btn) {
+                btn.classList.add('loading');
+                btn.disabled = true;
+            }
+            
+            try {
+                // Step 1: Generate PDF on backend first
+                showToast(`Preparing email for ${role}...`, 'info');
+                
+                await fetch(`${BACKEND_URL}/mcp/generate-pdf?role=${encodeURIComponent(role)}`);
+                
+                // Step 2: Get compose URL
+                const composeUrl = recipient 
+                    ? `${BACKEND_URL}/mcp/gmail-compose?role=${encodeURIComponent(role)}&recipient_email=${encodeURIComponent(recipient)}`
+                    : `${BACKEND_URL}/mcp/gmail-compose?role=${encodeURIComponent(role)}`;
+                
+                const response = await fetch(composeUrl);
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    if (!data.pdf_exists) {
+                        showToast('⚠️ PDF not generated yet. Running pulse first may be needed.', 'warning');
+                    }
+                    
+                    showToast('📧 Opening Gmail compose...', 'success');
+                    
+                    // Open Gmail compose URL in new window
+                    const gmailWindow = window.open(data.gmail_compose_url, '_blank');
+                    
+                    if (!gmailWindow || gmailWindow.closed || typeof gmailWindow.closed === 'undefined') {
+                        // Popup blocked — show URL for manual copy
+                        showToast('⚠️ Pop-up blocked! Opening in current tab...', 'warning');
+                        window.location.href = data.gmail_compose_url;
+                    }
+                } else {
+                    throw new Error(data.message || 'Failed to generate compose URL');
+                }
+            } catch (err) {
+                showToast(`❌ Gmail error: ${err.message}`, 'error');
+            } finally {
+                if (btn) {
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // ==================== Initialize ====================
         fetchPulse();
     </script>
 </body>
