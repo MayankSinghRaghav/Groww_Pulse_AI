@@ -48,12 +48,12 @@ def generate_gmail_compose_url(role: str, recipient_email: str = "", backend_url
     if pdf_exists:
         body = f"""{body_intro}
 
-📎 Access Weekly Briefing: {pdf_download_url}
+Please find the detailed weekly briefing in the attached document.
 
 This note covers:
   • Top 3 critical user-feedback themes
   • 3 real user quotes
-  • 3 recommended actions for your team
+  • One high-impact strategic recommendation
 
 Regards,
 Kuvera Pulse AI Engine
@@ -61,21 +61,17 @@ Kuvera Pulse AI Engine
     else:
         body = f"""{body_intro}
 
-⚠️ PDF Note Not Found
-
-The PDF note for '{role}' has not been generated yet.
-
-Please run the weekly pulse first to generate the report:
-   POST {backend_url}/mcp/run-weekly-pulse
+⚠️ PDF Note Not Found. Please generate the pulse first.
 
 ---
 Regards,
 Kuvera Pulse AI Engine"""
     
     # Generate Gmail compose URL
+    # Using 'su' for subject as it is the standard for Gmail compose view (view=cm)
     compose_params = {
         'to': recipient_email,
-        'subject': subject,
+        'su': subject,
         'body': body
     }
     
