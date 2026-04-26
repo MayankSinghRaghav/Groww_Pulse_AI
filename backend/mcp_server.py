@@ -2,11 +2,15 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import datetime
 import logging
 import os
+import json
+import glob
+from pathlib import Path
 from config.settings import LOG_DIR, LOG_LEVEL
+
 # FORCE RESOLVE DEPENDENCY CONFLICT ON RENDER
 import subprocess
 import sys
@@ -35,8 +39,6 @@ logging.basicConfig(
 logger = logging.getLogger("mcp_server")
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
-import json
 
 app = FastAPI(title="Kuvera Weekly Pulse MCP Server", version="1.0.0")
 
@@ -59,6 +61,8 @@ class SendEmailRequest(BaseModel):
     recipient_email: str
     sender_name: Optional[str] = "Kuvera Pulse AI Engine"
 
+# ==================== Results Endpoints ====================
+
 @app.get("/mcp/latest-results")
 async def get_latest_results():
     from config.settings import OUTPUT_DIR, APP_NAME
@@ -78,7 +82,7 @@ async def get_latest_results():
                 results["insights"] = json.load(f)
                 results["last_updated"] = datetime.datetime.fromtimestamp(insights_path.stat().st_mtime).isoformat()
         
-        # Find the MOST RECENT stakeholder emails file (not just today's)
+        # Find the MOST RECENT stakeholder emails file
         email_files = sorted(
             glob.glob(str(OUTPUT_DIR / f"{APP_NAME}_stakeholder_emails_*.json")),
             key=lambda f: os.path.getmtime(f),
@@ -91,30 +95,23 @@ async def get_latest_results():
                 with open(email_file, 'r', encoding='utf-8') as f:
                     emails_data = json.load(f)
                     if emails_data and len(emails_data) > 0:
-                        # Ensure every email draft has a download_link
                         import os as _os
                         backend_url = _os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+                        today_str = datetime.datetime.now().strftime("%Y%m%d")
                         for draft in emails_data:
-                            if "download_link" not in draft:
-                                today_str = datetime.datetime.now().strftime("%Y%m%d")
-                                role = draft.get("role", "Leadership")
-                                pdf_fn = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
-                                draft["download_link"] = f"{backend_url}/mcp/download-note/{pdf_fn}"
-                                draft["pdf_filename"] = pdf_fn
+                            role = draft.get("role", "Leadership")
+                            pdf_fn = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+                            draft["download_link"] = f"{backend_url}/mcp/download-note/{pdf_fn}"
+                            draft["pdf_filename"] = pdf_fn
                         results["emails"] = emails_data
                         emails_loaded = True
-                        logger.info(f"Loaded email drafts from: {email_file}")
                         break
             except Exception as e:
-                logger.warning(f"Failed to read {email_file}: {e}")
                 continue
         
-        if not emails_loaded:
-            logger.info("No stakeholder email files found.")
-                
         return results
     except Exception as e:
-        logger.error(f"Error fetching latest results: {e}")
+        logger.error(f"Error fetching results: {e}")
         return {"error": str(e)}
 
 @app.get("/health")
@@ -125,354 +122,143 @@ async def health_check():
 
 @app.get("/oauth/authorize")
 async def oauth_authorize():
-    """
-    Step 1: Initiate OAuth flow - redirect user to Google consent screen
-    """
     try:
         from tools.gmail_oauth import get_authorization_url
         auth_url = get_authorization_url()
-        logger.info("Redirecting to Google OAuth consent screen")
         return RedirectResponse(url=auth_url)
     except Exception as e:
-        logger.error(f"OAuth authorization error: {e}")
-        raise HTTPException(status_code=500, detail=f"OAuth initialization failed: {str(e)}")
+        logger.error(f"OAuth authorize error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/oauth/callback")
-async def oauth_callback(code: str = None, state: str = None, error: str = None):
-    """
-    Step 2: Handle OAuth callback from Google
-    Exchange authorization code for access/refresh tokens
-    """
+async def oauth_callback(request: Request, code: str = None, state: str = None, error: str = None):
     if error:
-        logger.error(f"OAuth error: {error}")
-        return {
-            "status": "error",
-            "message": f"Authorization failed: {error}",
-            "details": "User denied access or an error occurred during authorization"
-        }
-    
-    if not code or not state:
-        raise HTTPException(status_code=400, detail="Missing authorization code or state parameter")
+        return RedirectResponse(f"{os.getenv('FRONTEND_URL', 'https://kuvera-pulse.vercel.app')}?auth=error&msg={error}")
     
     try:
-        from tools.gmail_oauth import handle_oauth_callback, get_user_profile
-        from urllib.parse import urlencode
+        from tools.gmail_oauth import handle_oauth_callback
+        # Gmail API requires exact redirect URI match
+        authorization_response = str(request.url)
+        handle_oauth_callback(authorization_response, state)
         
-        # Reconstruct the full callback URL for token exchange
-        authorization_response = f"{request.url.scheme}://{request.url.netloc}{request.url.path}?{urlencode({'code': code, 'state': state})}"
-        
-        # Exchange code for tokens
-        creds = handle_oauth_callback(authorization_response, state)
-        
-        # Get user profile
-        profile = get_user_profile(creds)
-        
-        logger.info(f"OAuth successful! Authenticated as: {profile['email']}")
-        
-        return {
-            "status": "success",
-            "message": "OAuth authorization completed successfully!",
-            "user": {
-                "email": profile['email'],
-                "messages_total": profile['messages_total']
-            },
-            "next_steps": "You can now use the /mcp/send-email endpoint to send emails via Gmail API"
-        }
-        
+        frontend_url = os.getenv("FRONTEND_URL", "https://kuvera-pulse.vercel.app")
+        return RedirectResponse(f"{frontend_url}?auth=success")
     except Exception as e:
         logger.error(f"OAuth callback error: {e}")
-        raise HTTPException(status_code=500, detail=f"OAuth callback failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/oauth/status")
 async def oauth_status():
-    """Check current OAuth authentication status"""
     try:
         from tools.gmail_oauth import refresh_credentials_if_needed, get_user_profile
-        
         creds = refresh_credentials_if_needed()
-        
         if not creds:
-            return {
-                "authenticated": False,
-                "message": "No valid OAuth credentials found. Please authorize first via /oauth/authorize"
-            }
+            return {"authenticated": False}
         
         profile = get_user_profile(creds)
-        
         return {
             "authenticated": True,
-            "user": {
-                "email": profile['email'],
-                "messages_total": profile['messages_total']
-            },
-            "token_expiry": creds.expiry.isoformat() if creds.expiry else None,
-            "message": "OAuth credentials are valid and ready to use"
+            "email": profile.get('email'),
+            "expiry": creds.expiry.isoformat() if creds.expiry else None
         }
-        
     except Exception as e:
-        logger.error(f"OAuth status check error: {e}")
-        return {
-            "authenticated": False,
-            "error": str(e)
-        }
+        return {"authenticated": False, "error": str(e)}
 
 @app.post("/oauth/logout")
 async def oauth_logout():
-    """Revoke OAuth credentials (logout)"""
     try:
         from tools.gmail_oauth import get_stored_credentials, revoke_credentials
-        
         creds = get_stored_credentials()
-        
-        if not creds:
-            return {
-                "status": "success",
-                "message": "No credentials to revoke"
-            }
-        
-        success = revoke_credentials(creds)
-        
-        if success:
-            return {
-                "status": "success",
-                "message": "OAuth credentials revoked successfully"
-            }
-        else:
-            raise HTTPException(status_code=500, detail="Failed to revoke credentials")
-            
+        if creds:
+            revoke_credentials(creds)
+        return {"status": "success"}
     except Exception as e:
-        logger.error(f"OAuth logout error: {e}")
-        raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
+        return {"status": "error", "message": str(e)}
 
-@app.post("/oauth/test-email")
-async def test_oauth_email():
-    """Send a test email using OAuth to verify the integration works"""
+# ==================== Gmail Draft Integration ====================
+
+@app.get("/mcp/create-gmail-draft")
+async def create_gmail_draft(role: str, recipient_email: str = ""):
+    """Creates a Gmail draft with the PDF attached via Gmail API (OAuth)"""
     try:
-        from tools.gmail_oauth import refresh_credentials_if_needed, get_user_profile, send_email_via_gmail_api
-        
-        # Get valid credentials
-        creds = refresh_credentials_if_needed()
-        
-        if not creds:
-            raise HTTPException(
-                status_code=401, 
-                detail="No valid OAuth credentials. Please authorize first via /oauth/authorize"
-            )
-        
-        # Get user profile
-        profile = get_user_profile(creds)
-        sender_email = profile['email']
-        
-        # Send test email to self
-        subject = "[Kuvera Pulse] OAuth Test Email"
-        body_text = """This is a test email to verify that the Gmail OAuth integration is working correctly.
-
-If you received this email, the OAuth 2.0 authentication is properly configured!
-
-Next steps:
-1. Run the weekly pulse to generate reports
-2. Use the /mcp/send-email endpoint to send stakeholder emails with PDF attachments
-
-Regards,
-Kuvera Pulse AI Engine"""
-        
-        result = send_email_via_gmail_api(
-            creds=creds,
-            sender=f"Kuvera Pulse <{sender_email}>",
-            to=sender_email,
-            subject=subject,
-            body_text=body_text
-        )
-        
-        return {
-            "status": "success",
-            "message": f"Test email sent to {sender_email}",
-            "message_id": result['message_id']
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Test email error: {e}")
-        raise HTTPException(status_code=500, detail=f"Test email failed: {str(e)}")
-
-@app.get("/mcp/gmail-compose")
-async def gmail_compose_url(role: str, recipient_email: str = "", request: Request = None):
-    """
-    Generate Gmail compose URL with pre-filled content
-    Opens Gmail compose window with subject, body, and PDF download link
-    User manually attaches PDF and sends
-    """
-    try:
+        from tools.gmail_oauth import create_draft_via_oauth
         from tools.gmail_compose import generate_gmail_compose_url
-        import os
+        from config.settings import OUTPUT_DIR
         
-        # Get backend URL from environment or use default
-        backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
-        
-        # For production, use the actual backend URL
-        if request and hasattr(request, 'base_url') and "onrender.com" in str(request.base_url):
-            backend_url = str(request.base_url).rstrip('/')
-        
-        # Try to generate PDF on-demand if it doesn't exist
         _ensure_pdf_exists(role)
         
-        result = generate_gmail_compose_url(role, recipient_email, backend_url)
+        today_str = datetime.datetime.now().strftime("%Y%m%d")
+        pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+        pdf_path = OUTPUT_DIR / pdf_filename
         
-        logger.info(f"Generated Gmail compose URL for role: {role}")
-        return result
+        backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+        compose_data = generate_gmail_compose_url(role, recipient_email, backend_url)
         
+        result = create_draft_via_oauth(
+            to=recipient_email,
+            subject=compose_data['su'],
+            body_text=compose_data['body'],
+            pdf_path=str(pdf_path)
+        )
+        
+        if result['status'] == 'success':
+            return {
+                "status": "success",
+                "draft_id": result['draft_id'],
+                "gmail_url": "https://mail.google.com/mail/u/0/#drafts"
+            }
+        elif result['status'] == 'unauthorized':
+            return {
+                "status": "unauthorized",
+                "auth_url": f"{backend_url}/oauth/authorize"
+            }
+        else:
+            return result
     except Exception as e:
-        logger.error(f"Gmail compose URL generation error: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to generate compose URL: {str(e)}")
+        logger.error(f"Draft creation error: {e}")
+        return {"status": "error", "message": str(e)}
 
-# ==================== Helper: Ensure PDF exists ====================
+@app.get("/mcp/gmail-compose")
+async def gmail_compose_endpoint(role: str, recipient_email: str = "", request: Request = None):
+    """Legacy compose URL method (for manual attachment)"""
+    from tools.gmail_compose import generate_gmail_compose_url
+    backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+    _ensure_pdf_exists(role)
+    return generate_gmail_compose_url(role, recipient_email, backend_url)
+
+# ==================== PDF & Pulse Helpers ====================
 
 def _ensure_pdf_exists(role: str) -> bool:
-    """Generate PDF on-demand for a given role if it doesn't exist. Returns True if PDF exists/was created."""
     from config.settings import OUTPUT_DIR
-    
     today_str = datetime.datetime.now().strftime("%Y%m%d")
     pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
     file_path = OUTPUT_DIR / pdf_filename
     
-    # If PDF exists and is a reasonable size (e.g. > 2KB), assume it's good.
-    # We increased this because empty PDFs with just headers are around 1KB.
     if file_path.exists() and file_path.stat().st_size > 2048:
         return True
     
     try:
-        logger.info(f"PDF not found or empty for {role}, generating on-demand...")
-        
         insights_path = OUTPUT_DIR / "clustered_insights.json"
-        if not insights_path.exists():
-            logger.warning("No clustered_insights.json found — cannot generate PDF.")
-            return False
+        if not insights_path.exists(): return False
         
         with open(insights_path, 'r', encoding='utf-8') as f:
             insights = json.load(f)
         
         from tools.pdf_note import generate_pdf_note
-        action_ideas = insights.get("action_ideas", [])
-        if isinstance(action_ideas, str):
-            action_ideas = [action_ideas]
+        action_ideas = insights.get("action_ideas", {})
         
         success = generate_pdf_note(role, insights, action_ideas, str(file_path))
-        if success and file_path.exists():
-            logger.info(f"On-demand PDF generated: {pdf_filename} ({file_path.stat().st_size} bytes)")
-            return True
-        else:
-            logger.error(f"PDF generation returned False or file missing for {role}")
-            return False
+        return success and file_path.exists()
     except Exception as e:
-        import traceback
-        logger.error(f"On-demand PDF generation failed for {role}: {e}")
-        logger.error(traceback.format_exc())
+        logger.error(f"PDF generation failed: {e}")
         return False
-
-
-# ==================== Existing Endpoints ====================
-
-@app.get("/mcp/generate-pdf")
-async def generate_pdf_endpoint(role: str = "Product Team"):
-    """
-    Explicitly generate a PDF for a given role on-demand.
-    Returns the PDF filename and download link.
-    """
-    from config.settings import OUTPUT_DIR
-    import os
-    
-    valid_roles = ["Product Team", "Support Team", "Leadership"]
-    if role not in valid_roles:
-        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
-    
-    success = _ensure_pdf_exists(role)
-    
-    today_str = datetime.datetime.now().strftime("%Y%m%d")
-    pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
-    backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
-    
-    if success:
-        file_path = OUTPUT_DIR / pdf_filename
-        return {
-            "status": "success",
-            "role": role,
-            "pdf_filename": pdf_filename,
-            "pdf_size_bytes": file_path.stat().st_size,
-            "download_url": f"{backend_url}/mcp/download-note/{pdf_filename}",
-            "message": f"PDF generated successfully for {role}"
-        }
-    else:
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Failed to generate PDF for {role}. Ensure the weekly pulse has been run at least once."
-        )
-
-@app.get("/mcp/generate-all-pdfs")
-async def generate_all_pdfs_endpoint():
-    """
-    Generate PDFs for all 3 roles on-demand.
-    """
-    import os
-    results = {}
-    backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
-    
-    for role in ["Product Team", "Support Team", "Leadership"]:
-        success = _ensure_pdf_exists(role)
-        today_str = datetime.datetime.now().strftime("%Y%m%d")
-        pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
-        results[role] = {
-            "success": success,
-            "pdf_filename": pdf_filename,
-            "download_url": f"{backend_url}/mcp/download-note/{pdf_filename}" if success else None
-        }
-    
-    return {
-        "status": "success" if all(r["success"] for r in results.values()) else "partial",
-        "results": results
-    }
 
 @app.get("/mcp/download-note/{filename}")
 async def download_note(filename: str):
     from config.settings import OUTPUT_DIR
-    import os
-    
     file_path = OUTPUT_DIR / filename
-    
-    # If PDF doesn't exist, try to generate it on-demand
-    if not file_path.exists() or file_path.stat().st_size < 500:
-        if not filename.endswith(".pdf"):
-            raise HTTPException(status_code=404, detail="Invalid file type. Only PDF files are allowed.")
-        
-        try:
-            logger.info(f"PDF not found or empty: {filename}, attempting on-demand generation...")
-            
-            # Extract role from filename
-            # Format: Kuvera_Pulse_Product_Team_20260426.pdf
-            parts = filename.replace('.pdf', '').split('_')
-            if len(parts) >= 4:
-                role_parts = parts[2:-1]  # Get everything between "Pulse" and the date
-                role = ' '.join(role_parts)
-                
-                success = _ensure_pdf_exists(role)
-                
-                if success and file_path.exists():
-                    return FileResponse(
-                        path=str(file_path),
-                        media_type="application/pdf",
-                        filename=filename,
-                        headers={"Content-Disposition": f"inline; filename={filename}"}
-                    )
-        except HTTPException:
-            raise
-        except Exception as e:
-            import traceback
-            error_detail = f"PDF generation failed: {str(e)}"
-            logger.error(f"On-demand PDF generation failed: {e}")
-            logger.error(traceback.format_exc())
-            raise HTTPException(status_code=500, detail=error_detail)
-        
-        raise HTTPException(status_code=404, detail="PDF note could not be generated. Please run the pulse first.")
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
     
     return FileResponse(
         path=str(file_path),
@@ -481,222 +267,38 @@ async def download_note(filename: str):
         headers={"Content-Disposition": f"inline; filename={filename}"}
     )
 
-@app.post("/mcp/send-email")
-def send_email_with_pdf(request: SendEmailRequest):
-    """
-    Gmail MCP Tool: Sends a role-specific pulse note email with PDF attached.
-    Uses OAuth 2.0 for secure authentication (fallback to SMTP if OAuth not configured)
-    """
-    from config.settings import OUTPUT_DIR
-    import os
-
-    # Find the PDF for this role
-    today_str = datetime.datetime.now().strftime("%Y%m%d")
-    pdf_filename = f"Kuvera_Pulse_{request.role.replace(' ', '_')}_{today_str}.pdf"
-    pdf_path = OUTPUT_DIR / pdf_filename
-
-    if not pdf_path.exists():
-        raise HTTPException(status_code=404, detail=f"PDF note for '{request.role}' not found. Please run the pulse first.")
-
-    week_date = datetime.datetime.now().strftime("%B %d, %Y")
-    subject = f"[Kuvera Weekly Pulse] {week_date} — {request.role} Briefing"
-
-    # Short email body
-    role_intros = {
-        "Product Team": "Hi team,\n\nThis week's Kuvera Pulse Note is attached. It highlights the top engineering pain points from recent Play Store reviews, along with recommended sprint items.",
-        "Support Team": "Hi Support team,\n\nThis week's Kuvera Pulse Note is attached. It covers the top escalation themes and agent talking points for this week.",
-        "Leadership": "Hi,\n\nThis week's Kuvera Pulse Note is attached. It summarises the most critical sentiment signals and strategic recommendations."
-    }
-    body_text = role_intros.get(request.role, "Please find this week's Kuvera Pulse Note attached.")
-    body_text += f"\n\nThe note covers:\n  • Top 3 critical feedback themes\n  • 3 real user quotes\n  • 3 recommended actions for your team\n\nRegards,\n{request.sender_name}"
-
-    # Try OAuth first, fallback to SMTP
-    try:
-        from tools.gmail_oauth import send_email_with_oauth, refresh_credentials_if_needed
-        
-        # Check if OAuth is configured
-        creds = refresh_credentials_if_needed()
-        
-        if creds:
-            # Use OAuth
-            logger.info(f"Sending email via Gmail OAuth to {request.recipient_email}")
-            result = send_email_with_oauth(
-                to=request.recipient_email,
-                subject=subject,
-                body_text=body_text,
-                pdf_path=str(pdf_path),
-                sender_name=request.sender_name
-            )
-            
-            if result['status'] == 'success':
-                logger.info(f"Email sent successfully to {request.recipient_email} via OAuth. Message ID: {result.get('message_id')}")
-                return {
-                    "status": "success",
-                    "message": f"Email with PDF note sent to {request.recipient_email} via Gmail API",
-                    "method": "oauth",
-                    "message_id": result.get('message_id')
-                }
-            else:
-                logger.warning(f"OAuth send failed: {result.get('message')}. Falling back to SMTP...")
-        else:
-            logger.info("No OAuth credentials found, using SMTP fallback")
-            
-    except Exception as e:
-        logger.warning(f"OAuth error: {e}. Falling back to SMTP...")
-    
-    # Fallback to SMTP
-    logger.info(f"Sending email via SMTP to {request.recipient_email}")
-    import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-    from email.mime.application import MIMEApplication
-
-    smtp_email = os.getenv("SMTP_EMAIL")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-
-    if not smtp_email or not smtp_password:
-        raise HTTPException(
-            status_code=500, 
-            detail="Neither OAuth nor SMTP credentials are configured. Please either:\n1. Complete OAuth authorization via /oauth/authorize, OR\n2. Set SMTP_EMAIL and SMTP_PASSWORD in environment variables"
-        )
-
-    # Build the email
-    msg = MIMEMultipart()
-    msg["From"] = f"{request.sender_name} <{smtp_email}>"
-    msg["To"] = request.recipient_email
-    msg["Subject"] = subject
-    msg.attach(MIMEText(body_text, "plain"))
-
-    # Attach PDF
-    with open(pdf_path, "rb") as f:
-        pdf_data = f.read()
-    pdf_attachment = MIMEApplication(pdf_data, _subtype="pdf")
-    pdf_attachment.add_header("Content-Disposition", "attachment", filename=pdf_filename)
-    msg.attach(pdf_attachment)
-
-    # Send via Gmail SMTP
-    try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(smtp_email, smtp_password)
-            server.sendmail(smtp_email, request.recipient_email, msg.as_string())
-        logger.info(f"Email sent to {request.recipient_email} for role '{request.role}' via SMTP")
-        return {
-            "status": "success", 
-            "message": f"Email with PDF note sent to {request.recipient_email} via SMTP",
-            "method": "smtp"
-        }
-    except smtplib.SMTPAuthenticationError:
-        raise HTTPException(
-            status_code=401, 
-            detail="Gmail authentication failed. Ensure SMTP_PASSWORD is a Gmail App Password (not your regular password). Enable 2FA and generate an App Password at myaccount.google.com/apppasswords"
-        )
-    except Exception as e:
-        logger.error(f"SMTP send failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
-
-
 @app.post("/mcp/run-weekly-pulse")
 def run_weekly_pulse(request: WeeklyPulseRequest):
-    logger.info(f"🚀 Starting weekly pulse for {request.app_name} (Last {request.weeks} weeks)")
-    
     try:
-        # Lazy-load tools to ensure server starts regardless of tool-level import issues
         from tools.review_ingestion import run_ingestion_pipeline
         from tools.theme_clustering import run_clustering_pipeline
         from tools.insight_generation import run_insight_generation
         from tools.email_draft import run_email_drafting
-        from tools.pdf_note import generate_all_pdf_notes
-        from config.settings import OUTPUT_DIR, APP_NAME
-        import json
-
-        # Cleanup old PDFs to force regeneration
-        import glob
         from config.settings import OUTPUT_DIR
+        
+        # Cleanup
         old_pdfs = glob.glob(str(OUTPUT_DIR / "*.pdf"))
-        for p in old_pdfs:
+        for p in old_pdfs: 
             try: os.remove(p)
             except: pass
-        logger.info(f"Cleaned up {len(old_pdfs)} old PDFs.")
-
-        # Phase 2: Ingestion
-        logger.info("Executing Phase 2: Ingestion...")
+            
         run_ingestion_pipeline()
-        
-        # Phase 3: Clustering
-        logger.info("Executing Phase 3: Clustering...")
         run_clustering_pipeline(app_name=request.app_name)
-        
-        # Phase 4: Report Generation (MD, PDF, HTML)
-        logger.info("Executing Phase 4: Report Generation...")
         run_insight_generation()
-        
-        # Phase 5: Email Drafting + PDF Note Generation
-        logger.info("Executing Phase 5: Email Drafting + PDF Note Generation...")
         run_email_drafting()
         
-        logger.info("✅ Full Weekly Pulse Cycle Completed Successfully.")
-        return {
-            "status": "success",
-            "message": f"Weekly pulse for {request.app_name} completed successfully.",
-            "timestamp": datetime.datetime.now().isoformat()
-        }
+        return {"status": "success", "timestamp": datetime.datetime.now().isoformat()}
     except Exception as e:
-        logger.error(f"❌ Pipeline Failed: {e}")
+        logger.error(f"Pulse failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/mcp/download-word/{filename}")
 async def download_word(filename: str):
     from config.settings import OUTPUT_DIR
-    import os
-    import json
-    
     file_path = OUTPUT_DIR / filename
-    
-    # If Word doc doesn't exist, try to generate it on-demand
-    if not file_path.exists() or file_path.stat().st_size < 100:
-        if not filename.endswith(".docx"):
-            raise HTTPException(status_code=404, detail="Invalid file type. Only .docx files are allowed.")
-        
-        try:
-            logger.info(f"Word doc not found or empty: {filename}, attempting on-demand generation...")
-            
-            # Extract role from filename
-            # Format: Kuvera_Pulse_Product_Team_20260426.docx
-            parts = filename.replace('.docx', '').split('_')
-            if len(parts) >= 4:
-                role_parts = parts[2:-1] 
-                role = ' '.join(role_parts)
-                
-                # Get insights
-                insights_path = OUTPUT_DIR / "clustered_insights.json"
-                if not insights_path.exists():
-                    raise HTTPException(status_code=404, detail="Pulse data not found. Please run the pulse first.")
-                    
-                with open(insights_path, 'r', encoding='utf-8') as f:
-                    insights = json.load(f)
-                
-                from tools.word_note import generate_word_note
-                action_ideas = insights.get("action_ideas", {})
-                
-                success = generate_word_note(role, insights, action_ideas, str(file_path))
-                
-                if success and file_path.exists():
-                    return FileResponse(
-                        path=str(file_path),
-                        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        filename=filename
-                    )
-        except Exception as e:
-            logger.error(f"Word generation failed: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
-    
-    return FileResponse(
-        path=str(file_path),
-        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        filename=filename
-    )
-
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(path=str(file_path), filename=filename)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

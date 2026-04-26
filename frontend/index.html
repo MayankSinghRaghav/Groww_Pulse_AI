@@ -429,10 +429,15 @@
             <span id="connection-status" style="color: #FFCC00;">●</span> Connecting to Insights Engine...
         </div>
         <div class="header-actions">
+            <div id="gmail-status" style="display:none; font-size: 11px; padding: 4px 10px; background: rgba(0,255,0,0.1); border: 1px solid rgba(0,255,0,0.2); border-radius: 20px; color: #00FF00; margin-right: 10px;">
+                ● Gmail Connected
+            </div>
+            <a id="connect-gmail-btn" href="#" target="_blank" style="display:none; font-size: 11px; padding: 4px 10px; background: #DB4437; color: white; border-radius: 20px; margin-right: 10px; text-decoration: none;">
+                Connect Gmail
+            </a>
             <button id="run-btn" class="header-btn" onclick="triggerPulse()">
                 🚀 GENERATE NEW PULSE
             </button>
-
         </div>
     </header>
     
@@ -690,11 +695,30 @@
             
             try {
                 // Step 1: Generate PDF on backend first
-                showToast(`Preparing email for ${role}...`, 'info');
-                
+                showToast(`Preparing report for ${role}...`, 'info');
                 await fetch(`${BACKEND_URL}/mcp/generate-pdf?role=${encodeURIComponent(role)}`);
                 
-                // Step 2: Get compose URL
+                // Step 2: Try Auto-Attach Draft (Gmail API)
+                showToast(`Creating Gmail draft...`, 'info');
+                const draftUrl = `${BACKEND_URL}/mcp/create-gmail-draft?role=${encodeURIComponent(role)}&recipient_email=${encodeURIComponent(recipient || '')}`;
+                const draftResponse = await fetch(draftUrl);
+                const draftData = await draftResponse.json();
+
+                if (draftData.status === 'success') {
+                    showToast('✅ Draft created with attachment!', 'success');
+                    setTimeout(() => {
+                        window.open(draftData.gmail_url, '_blank');
+                    }, 1000);
+                    return;
+                }
+                
+                // Step 3: Fallback to Manual Compose URL (if API fails or unauthorized)
+                if (draftData.status === 'unauthorized') {
+                    showToast('💡 Connect Gmail in the header to auto-attach files.', 'info');
+                } else {
+                    showToast('⚠️ API draft failed. Falling back to manual method.', 'warning');
+                }
+
                 const composeUrl = recipient 
                     ? `${BACKEND_URL}/mcp/gmail-compose?role=${encodeURIComponent(role)}&recipient_email=${encodeURIComponent(recipient)}`
                     : `${BACKEND_URL}/mcp/gmail-compose?role=${encodeURIComponent(role)}`;
@@ -703,25 +727,14 @@
                 const data = await response.json();
                 
                 if (data.status === 'success') {
-                    if (!data.pdf_exists) {
-                        showToast('⚠️ PDF not generated yet. Running pulse first may be needed.', 'warning');
-                    }
-                    
                     showToast('📧 Opening Gmail compose...', 'success');
-                    
-                    // Open Gmail compose URL in new window
-                    const gmailWindow = window.open(data.gmail_compose_url, '_blank');
-                    
-                    if (!gmailWindow || gmailWindow.closed || typeof gmailWindow.closed === 'undefined') {
-                        // Popup blocked — show URL for manual copy
-                        showToast('⚠️ Pop-up blocked! Opening in current tab...', 'warning');
-                        window.location.href = data.gmail_compose_url;
-                    }
+                    window.open(data.gmail_compose_url, '_blank');
                 } else {
-                    throw new Error(data.message || 'Failed to generate compose URL');
+                    showToast(`Error: ${data.message}`, 'error');
                 }
             } catch (err) {
                 showToast(`❌ Gmail error: ${err.message}`, 'error');
+
             } finally {
                 if (btn) {
                     btn.classList.remove('loading');
@@ -744,6 +757,22 @@
         }
 
         // ==================== Initialize ====================
+        // Check Gmail Status
+        fetch(`${BACKEND_URL}/mcp/gmail-status`)
+            .then(r => r.json())
+            .then(data => {
+                const statusEl = document.getElementById('gmail-status');
+                const connectBtn = document.getElementById('connect-gmail-btn');
+                if (data.authenticated) {
+                    statusEl.style.display = 'block';
+                    connectBtn.style.display = 'none';
+                } else {
+                    statusEl.style.display = 'none';
+                    connectBtn.style.display = 'block';
+                    connectBtn.href = `${BACKEND_URL}/oauth/authorize`;
+                }
+            }).catch(e => console.error("Gmail status check failed", e));
+
         fetchPulse();
     </script>
 </body>

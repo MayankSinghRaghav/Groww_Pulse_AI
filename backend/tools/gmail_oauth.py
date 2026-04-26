@@ -330,44 +330,40 @@ def revoke_credentials(creds: Credentials) -> bool:
         return False
 
 
-# Convenience function for the existing email sending flow
-def send_email_with_oauth(
+def create_draft_via_oauth(
     to: str,
     subject: str,
     body_text: str,
-    pdf_path: Optional[str] = None,
-    sender_name: str = "Kuvera Pulse AI Engine"
+    pdf_path: Optional[str] = None
 ) -> Dict[str, Any]:
-    """
-    High-level function to send email using OAuth
-    This can replace the SMTP-based sending in mcp_server.py
-    """
+    """Create a draft using OAuth credentials"""
     try:
-        # Get valid credentials
         creds = refresh_credentials_if_needed()
-        
         if not creds:
-            return {
-                'status': 'error',
-                'message': 'No valid OAuth credentials. Please complete authorization first.'
-            }
+            logger.warning("No valid credentials for draft creation")
+            return {'status': 'unauthorized'}
         
-        # Get user's email from profile
+        service = get_gmail_service(creds)
+        
+        # Get sender from profile
         profile = get_user_profile(creds)
-        sender_email = profile['email']
-        sender = f"{sender_name} <{sender_email}>"
+        sender = f"Kuvera Pulse AI Engine <{profile['email']}>"
         
-        # Send email
-        result = send_email_via_gmail_api(creds, sender, to, subject, body_text, pdf_path)
+        message = create_message_with_attachment(sender, to, subject, body_text, pdf_path)
         
-        return result
+        draft = service.users().drafts().create(
+            userId='me',
+            body={'message': message}
+        ).execute()
         
-    except Exception as e:
-        logger.error(f"Error in send_email_with_oauth: {e}")
+        logger.info(f"Draft created successfully: {draft['id']}")
         return {
-            'status': 'error',
-            'message': str(e)
+            'status': 'success',
+            'draft_id': draft['id']
         }
+    except Exception as e:
+        logger.error(f"Error creating draft via OAuth: {e}")
+        return {'status': 'error', 'message': str(e)}
 
 
 if __name__ == "__main__":
