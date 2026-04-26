@@ -45,7 +45,7 @@ Kuvera Pulse AI Engine
 
         email_drafts.append({
             "role": role,
-            "subject": f"[Kuvera Weekly Pulse] {week_date} — {role} Briefing",
+            "subject": f"Weekly Kuvera Pulse for {role}",
             "body": body,
             "pdf_filename": pdf_filename,
             "download_link": download_link,

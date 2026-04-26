@@ -183,7 +183,7 @@ class KuveraPDF(FPDF):
         self.ln(1)
 
 
-def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output_path: str):
+def generate_pdf_note(role: str, insights_data: dict, action_ideas: Any, output_path: str):
     """Generate a branded, role-specific PDF pulse note."""
     try:
         local_clusters = insights_data.get("local_clusters", {})
@@ -207,11 +207,19 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
         while len(all_quotes) < 3:
             all_quotes.append("Users are experiencing friction with core app features after the recent update.")
 
+        # Role-specific actions
+        if isinstance(action_ideas, dict):
+            role_actions = action_ideas.get(role, [])
+        else:
+            role_actions = action_ideas if isinstance(action_ideas, list) else [action_ideas]
+
         # Clean action_ideas — remove markdown bold markers and intro sentences
         clean_actions = []
         import re
-        for idea in action_ideas:
-            # Skip intro sentences (usually long, no colon, contains 'action ideas' or 'team')
+        for idea in role_actions:
+            if not isinstance(idea, str): continue
+            
+            # Skip generic intro sentences
             if len(idea) > 60 and ":" not in idea and ("action ideas" in idea.lower() or "team" in idea.lower()):
                 continue
             
@@ -220,13 +228,19 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
             # Remove leading numbers like "1. "
             cleaned = re.sub(r'^\d+[\.\)]\s*', '', cleaned)
             
+            # Ensure the text refers to the CURRENT role, not others
+            if role == "Leadership":
+                cleaned = cleaned.replace("product team", "organization")
+            elif role == "Support Team":
+                cleaned = cleaned.replace("product team", "support staff")
+            
             if cleaned and len(cleaned) > 5:
                 clean_actions.append(cleaned)
         
         # If we have too many, take the first 3. If too few, add placeholders.
         actions = clean_actions[:3]
         while len(actions) < 3:
-            actions.append("Prioritize reported friction points in the next operational cycle.")
+            actions.append(f"Monitor {role.lower()} related signals and prioritize accordingly.")
 
         ctx = ROLE_CONTEXT.get(role, ROLE_CONTEXT["Leadership"])
 
@@ -274,7 +288,9 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
         for q in all_quotes:
             pdf.quote_block(q, 0)
 
-        # 3 actions
+        # 3 actions - Start on Page 2 for clarity and to avoid overlap
+        pdf.add_page()
+        pdf.set_y(40)
         pdf.section_title(ctx["action_label"])
         for i, action in enumerate(actions, 1):
             pdf.action_item(i, action)

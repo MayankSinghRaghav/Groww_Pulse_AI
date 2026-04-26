@@ -105,47 +105,59 @@ def analyze_sentiment_and_quotes(clustered_data: Dict[str, List[Dict[str, Any]]]
         
     return report
 
-def generate_weekly_action_ideas(stats_report: Dict[str, Any], app_name: str) -> List[str]:
+def generate_weekly_action_ideas(stats_report: Dict[str, Any], app_name: str) -> Dict[str, List[str]]:
     """
-    Uses the LLM to generate 3 concrete action ideas based on the week's top themes.
+    Uses the LLM to generate role-specific action ideas for Product, Support, and Leadership.
     """
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        return ["Sync with product team on high-volume labels", "Monitor social media for cross-platform sentiment", "Review most critical 1-star reviews manually"]
+        return {
+            "Product Team": ["Audit document compression logic", "Fix OTP auto-read failures"],
+            "Support Team": ["Update empathy scripts for KYC delays", "Brief agents on login issues"],
+            "Leadership": ["Prioritize KYC stability to reduce churn", "Evaluate onboarding conversion funnel"]
+        }
 
     client = Groq(api_key=api_key)
-    
-    # Sort themes by volume to identify the top 3
     sorted_themes = sorted(stats_report.items(), key=lambda x: x[1]['volume'], reverse=True)[:3]
     top_3_summary = ""
     for theme, data in sorted_themes:
         top_3_summary += f"- Theme: {theme} (Rating: {data['average_rating']})\n"
         top_3_summary += f"  Sample Feedback: {data['representative_quotes'][0] if data['representative_quotes'] else 'None'}\n"
 
-    prompt = f"""You are a Product Manager for {app_name}. Based on this week's app review data, generate exactly 3 concrete, high-level ACTION IDEAS for the product team.
-    
-    Data:
-    {top_3_summary}
-    
-    Format:
-    1. Action Item 1
-    2. Action Item 2
-    3. Action Item 3
-    """
-    
-    try:
-        chat_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model=MODEL_NAME,
-            temperature=0.3,
-        )
-        ideas = chat_completion.choices[0].message.content.strip().split('\n')
-        # Clean up list formatting if present
-        ideas = [i.strip() for i in ideas if i.strip()]
-        return ideas[:3]
-    except Exception as e:
-        logger.error(f"Error generating action ideas: {e}")
-        return ["Review new user onboarding flow", "Investigate payment success rates", "Audit portfolio statement generating engine"]
+    role_actions = {}
+    roles = {
+        "Product Team": "Focus on engineering, UI/UX, and technical fixes.",
+        "Support Team": "Focus on agent preparedness, response templates, and immediate user relief.",
+        "Leadership": "Focus on strategic impact, retention risk, and high-level business priorities."
+    }
+
+    for role, context in roles.items():
+        prompt = f"""You are a senior consultant for {app_name}. Based on this week's app review data, generate exactly 3 concrete action ideas specifically for the {role}.
+        
+        {role} context: {context}
+        
+        Data:
+        {top_3_summary}
+        
+        Format:
+        - Action Item 1
+        - Action Item 2
+        - Action Item 3
+        """
+        try:
+            chat_completion = client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=MODEL_NAME,
+                temperature=0.3,
+            )
+            raw_text = chat_completion.choices[0].message.content.strip()
+            ideas = [i.strip('- ').strip('123. ') for i in raw_text.split('\n') if i.strip()]
+            role_actions[role] = [i for i in ideas if len(i) > 5][:3]
+        except Exception as e:
+            logger.error(f"Error generating action ideas for {role}: {e}")
+            role_actions[role] = [f"Monitor {role} related feedback", "Analyze top 3 themes for impact", "Draft response plan"]
+
+    return role_actions
 
 def run_clustering_pipeline(app_name: str = "Kuvera") -> Dict[str, Any]:
     FALLBACK_DATA = {
@@ -213,9 +225,6 @@ def run_clustering_pipeline(app_name: str = "Kuvera") -> Dict[str, Any]:
     llm_insights = batch_llm_clustering(unclassified, app_name)
     
     action_ideas = generate_weekly_action_ideas(stats_report, app_name)
-    
-    if isinstance(action_ideas, str):
-        action_ideas = [i.strip() for i in action_ideas.split('\n') if i.strip()][:3]
 
     final_output = {
         "local_clusters": stats_report,
