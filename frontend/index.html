@@ -445,11 +445,6 @@
             </div>
 
             <div>
-                <div class="section-title">Action Roadmap</div>
-                <div id="actions-container" class="action-card">
-                    <div class="action-item">Preparing insights...</div>
-                </div>
-
                 <div class="section-title">Stakeholder Drafts</div>
                 <div id="drafts-container">
                     <div class="card" style="text-align: center; color: #999; font-size: 14px;">
@@ -560,7 +555,6 @@
                 statusText.innerHTML = `<span id="connection-status" style="color: #00FF00;">●</span> Live | Last Synchronized: ${lastUpdated}`;
                 
                 renderThemes(data.insights.local_clusters);
-                renderActions(data.insights.action_ideas);
                 renderDrafts(data.emails);
                 document.getElementById('json-raw').textContent = JSON.stringify(data.insights || {}, null, 2);
             } catch (err) {
@@ -590,15 +584,7 @@
             });
         }
 
-        // ==================== Render Actions ====================
-        function renderActions(ideas) {
-            const container = document.getElementById('actions-container');
-            if (!ideas || ideas.length === 0) {
-                container.innerHTML = '<div class="action-item">Run pulse to see roadmap.</div>';
-                return;
-            }
-            container.innerHTML = ideas.map(idea => `<div class="action-item">${idea}</div>`).join('');
-        }
+
 
         // ==================== Render Drafts ====================
         function renderDrafts(emails) {

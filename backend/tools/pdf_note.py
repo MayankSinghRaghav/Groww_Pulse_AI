@@ -21,21 +21,21 @@ TEXT_MUTED = (99, 110, 114)
 ROLE_CONTEXT = {
     "Product Team": {
         "tagline": "Engineering & Feature Prioritization Briefing",
-        "intro": "This note highlights the highest-priority user-reported issues for your sprint planning. Focus areas are ranked by volume and severity.",
+        "intro": "Focus on these highest-priority user-reported issues for upcoming sprint planning. Themes are ranked by volume and severity.",
         "theme_label": "Engineering Priority",
         "action_label": "Recommended Sprint Items",
         "quote_label": "User-Reported Pain Points",
     },
     "Support Team": {
         "tagline": "Customer Escalation Preparedness Briefing",
-        "intro": "This note equips your agents with the top complaint themes and user language this week, so you can handle escalations with empathy and accuracy.",
+        "intro": "Equip agents with these top complaint themes and user language to handle escalations with empathy and accuracy.",
         "theme_label": "Top Escalation Theme",
         "action_label": "Agent Action Points",
         "quote_label": "Real User Voices to Understand",
     },
     "Leadership": {
         "tagline": "Strategic Sentiment & Retention Risk Briefing",
-        "intro": "This executive summary highlights the most business-critical signals from this week's app reviews and recommends one strategic priority.",
+        "intro": "Executive summary of critical signals from app reviews with strategic priorities for business impact.",
         "theme_label": "Retention Risk Area",
         "action_label": "Strategic Recommendations",
         "quote_label": "Representative User Sentiment",
@@ -207,29 +207,39 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
         while len(all_quotes) < 3:
             all_quotes.append("Users are experiencing friction with core app features after the recent update.")
 
-        # Clean action_ideas — remove markdown bold markers for PDF rendering
+        # Clean action_ideas — remove markdown bold markers and intro sentences
         clean_actions = []
+        import re
         for idea in action_ideas:
+            # Skip intro sentences (usually long, no colon, contains 'action ideas' or 'team')
+            if len(idea) > 60 and ":" not in idea and ("action ideas" in idea.lower() or "team" in idea.lower()):
+                continue
+            
+            # Clean formatting
             cleaned = idea.replace("**", "").strip()
+            # Remove leading numbers like "1. "
+            cleaned = re.sub(r'^\d+[\.\)]\s*', '', cleaned)
+            
             if cleaned and len(cleaned) > 5:
                 clean_actions.append(cleaned)
-        action_ideas = clean_actions
-
-        while len(action_ideas) < 3:
-            action_ideas.append("Review top-reported issues and prioritize in next sprint.")
-        actions = action_ideas[:3]
+        
+        # If we have too many, take the first 3. If too few, add placeholders.
+        actions = clean_actions[:3]
+        while len(actions) < 3:
+            actions.append("Prioritize reported friction points in the next operational cycle.")
 
         ctx = ROLE_CONTEXT.get(role, ROLE_CONTEXT["Leadership"])
 
         pdf = KuveraPDF()
-        pdf.set_auto_page_break(auto=True, margin=20)
+        pdf.set_auto_page_break(auto=True, margin=25) # Increased bottom margin to prevent footer overlap
         pdf.add_page()
-        pdf.set_margins(12, 38, 12)
+        pdf.set_margins(12, 40, 12) # Increased top margin to 40 to clear header (which is 32)
 
         # Role header
         pdf.set_font("Helvetica", "B", 14)
         pdf.set_text_color(*BRAND_DARK_GREY)
-        pdf.set_xy(12, 38)
+        pdf.set_y(40) # Explicitly set y to top margin
+        pdf.set_x(12)
         pdf.cell(0, 8, _sanitize(f"Weekly Pulse Note - {role}"), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
         pdf.set_font("Helvetica", "I", 9)
         pdf.set_text_color(*TEXT_MUTED)
@@ -263,7 +273,6 @@ def generate_pdf_note(role: str, insights_data: dict, action_ideas: list, output
         pdf.section_title(ctx["quote_label"])
         for q in all_quotes:
             pdf.quote_block(q, 0)
-        pdf.ln(2)
 
         # 3 actions
         pdf.section_title(ctx["action_label"])
