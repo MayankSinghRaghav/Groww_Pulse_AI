@@ -10,11 +10,11 @@ logger = logging.getLogger("run_weekly_pulse")
 async def trigger_pipeline():
     url = "http://localhost:8000/mcp/run-weekly-pulse"
     payload = {
-        "app_name": "Kuvera",
+        "app_name": "Groww",
         "weeks": 8
     }
     
-    logger.info(f"Triggering Kuvera Weekly Pulse via MCP Server at {url}...")
+    logger.info(f"Triggering Groww Weekly Pulse via MCP Server at {url}...")
     
     async with httpx.AsyncClient(timeout=600.0) as client:
         try:

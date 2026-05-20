@@ -12,9 +12,9 @@ logger = logging.getLogger("email_draft")
 BACKEND_URL = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
 
 ROLE_SHORT_INTRO = {
-    "Product Team": "Hi team,\n\nPlease find this week's Kuvera Pulse Note attached — it highlights the top 3 user-reported engineering pain points from this week's Play Store reviews, along with recommended sprint items.\n\nClick the link below to download your briefing PDF.",
-    "Support Team": "Hi Support team,\n\nThis week's Kuvera Pulse Note is ready. It covers the top 3 escalation themes your agents will likely encounter, real user quotes to guide your empathy scripts, and 3 action points.\n\nClick the link below to download your briefing PDF.",
-    "Leadership": "Hi,\n\nThis week's Kuvera Pulse Note summarises the most critical signals from our app reviews. It includes the top 3 retention risk areas and one strategic recommendation.\n\nClick the link below to download your briefing PDF.",
+    "Product Team": "Hi team,\n\nPlease find this week's Groww Pulse Note attached — it highlights the top 3 user-reported engineering pain points from this week's Play Store reviews, along with recommended sprint items.\n\nClick the link below to download your briefing PDF.",
+    "Support Team": "Hi Support team,\n\nThis week's Groww Pulse Note is ready. It covers the top 3 escalation themes your agents will likely encounter, real user quotes to guide your empathy scripts, and 3 action points.\n\nClick the link below to download your briefing PDF.",
+    "Leadership": "Hi,\n\nThis week's Groww Pulse Note summarises the most critical signals from our app reviews. It includes the top 3 retention risk areas and one strategic recommendation.\n\nClick the link below to download your briefing PDF.",
 }
 
 
@@ -26,7 +26,7 @@ def draft_email_variants(insights_data: dict, pdf_paths: dict = None) -> List[Di
 
     for role in TONE_MAP.keys():
         intro = ROLE_SHORT_INTRO.get(role, "Please find this week's pulse note below.")
-        pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+        pdf_filename = f"Groww_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
         download_link = f"{BACKEND_URL}/mcp/download-note/{pdf_filename}"
 
         body = f"""{intro}
@@ -40,12 +40,12 @@ This note covers:
   • 3 recommended actions for your team
 
 Regards,
-Kuvera Pulse AI Engine
-(Automated weekly digest — Kuvera by CRED)"""
+Groww Pulse AI Engine
+(Automated weekly digest — Groww)"""
 
         email_drafts.append({
             "role": role,
-            "subject": f"Weekly Kuvera Pulse for {role}",
+            "subject": f"Weekly Groww Pulse for {role}",
             "body": body,
             "pdf_filename": pdf_filename,
             "download_link": download_link,
@@ -71,7 +71,7 @@ def run_email_drafting():
     # Generate PDFs first
     try:
         from tools.pdf_note import generate_all_pdf_notes
-        pdf_paths = generate_all_pdf_notes(insights_data, list(insights_data.get("action_ideas", [])))
+        pdf_paths = generate_all_pdf_notes(insights_data, insights_data.get("action_ideas", {}))
         logger.info(f"Generated {len(pdf_paths)} PDF notes.")
     except Exception as e:
         logger.error(f"PDF generation failed: {e}")

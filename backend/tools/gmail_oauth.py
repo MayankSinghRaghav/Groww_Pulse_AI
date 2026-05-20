@@ -8,6 +8,15 @@ import json
 import logging
 from pathlib import Path
 from typing import Optional, Dict, Any
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Allow HTTP for local development (MUST be 1 for localhost)
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+# Allow scope changes (Google often adds openid)
+os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
@@ -28,9 +37,12 @@ REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "http://localhost:8000/oauth/cal
 # Scopes for Gmail API
 SCOPES = [
     'https://www.googleapis.com/auth/gmail.send',
+    'https://www.googleapis.com/auth/gmail.compose',
+    'https://www.googleapis.com/auth/gmail.modify',
     'https://www.googleapis.com/auth/gmail.readonly',
     'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/userinfo.email'
+    'https://www.googleapis.com/auth/userinfo.email',
+    'openid'
 ]
 
 # Token storage path
@@ -151,8 +163,12 @@ def get_authorization_url() -> str:
         
         # Store state for verification during callback
         state_file = TOKEN_DIR / "oauth_state.json"
+        state_data = {'state': state}
+        if hasattr(flow, 'code_verifier'):
+            state_data['code_verifier'] = flow.code_verifier
+            
         with open(state_file, 'w') as f:
-            json.dump({'state': state}, f)
+            json.dump(state_data, f)
         
         logger.info("Authorization URL generated")
         return authorization_url
@@ -171,9 +187,12 @@ def handle_oauth_callback(authorization_response: str, state: str) -> Credential
     try:
         # Verify state matches
         state_file = TOKEN_DIR / "oauth_state.json"
+        code_verifier = None
         if state_file.exists():
             with open(state_file, 'r') as f:
-                stored_state = json.load(f).get('state')
+                state_data = json.load(f)
+                stored_state = state_data.get('state')
+                code_verifier = state_data.get('code_verifier')
             
             if state != stored_state:
                 raise ValueError("State mismatch - possible CSRF attack")
@@ -187,6 +206,9 @@ def handle_oauth_callback(authorization_response: str, state: str) -> Credential
             state=state
         )
         
+        if code_verifier:
+            flow.code_verifier = code_verifier
+            
         flow.fetch_token(authorization_response=authorization_response)
         creds = flow.credentials
         
@@ -364,7 +386,7 @@ def create_draft_via_oauth(
         
         # Get sender from profile
         profile = get_user_profile(creds)
-        sender = f"Kuvera Pulse AI Engine <{profile['email']}>"
+        sender = f"Groww Pulsator AI Engine <{profile['email']}>"
         
         message = create_message_with_attachment(sender, to, subject, body_text, pdf_path)
         

@@ -61,7 +61,7 @@ def generate_markdown(insights_data: dict, output_path: str) -> str:
         return ""
 
 def generate_pdf(markdown_text: str, output_path: str):
-    """Converts the Markdown report to a branded Kuvera PDF using a stream-based approach."""
+    """Converts the Markdown report to a branded Groww PDF using a stream-based approach."""
     try:
         # Sanitize for latin-1
         clean_text = markdown_text.encode('latin-1', 'replace').decode('latin-1')
@@ -75,10 +75,10 @@ def generate_pdf(markdown_text: str, output_path: str):
         # Simple Header using write()
         pdf.set_font("helvetica", "B", 24)
         pdf.set_text_color(0, 0, 0)
-        pdf.write(15, "KUVERA")
+        pdf.write(15, "GROWW")
         pdf.set_font("helvetica", "", 10)
         pdf.set_text_color(150, 150, 150)
-        pdf.write(15, " BY CRED")
+        pdf.write(15, " PULSE")
         pdf.ln(15)
         
         # Content (Pure flow)

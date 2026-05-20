@@ -26,7 +26,7 @@ def hard_keyword_pre_cluster(reviews: List[Dict[str, Any]]) -> (Dict[str, List[D
                 clustered[theme].append(review)
                 matched = True
                 break # Map to the first matching theme for simplicity
-                
+        
         if not matched:
             unclassified.append(review)
 
@@ -235,7 +235,7 @@ def run_clustering_pipeline(app_name: str = "Kuvera") -> Dict[str, Any]:
     logger.info(f"Local Pre-Clustering complete. {len(unclassified)} reviews require advanced LLM.")
     
     stats_report = analyze_sentiment_and_quotes(clustered, unclassified)
-    llm_insights = batch_llm_clustering(unclassified, app_name)
+    llm_insights = batch_llm_clustering(unclassified[:120], app_name)
     
     action_ideas = generate_weekly_action_ideas(stats_report, app_name)
 

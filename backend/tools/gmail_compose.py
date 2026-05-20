@@ -25,7 +25,7 @@ def generate_gmail_compose_url(role: str, recipient_email: str = "", backend_url
     """
     today_str = datetime.datetime.now().strftime("%Y%m%d")
     week_date = datetime.datetime.now().strftime("%B %d, %Y")
-    pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+    pdf_filename = f"Groww_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
     pdf_download_url = f"{backend_url}/mcp/download-note/{pdf_filename}"
     
     # Check if PDF exists
@@ -33,16 +33,16 @@ def generate_gmail_compose_url(role: str, recipient_email: str = "", backend_url
     pdf_exists = pdf_path.exists()
     
     # Subject line
-    subject = f"Weekly Kuvera Pulse for {role}"
+    subject = f"Weekly Groww Pulse for {role}"
     
     # Email body with PDF download link
     role_intros = {
-        "Product Team": "Hi team,\n\nThis week's Kuvera Pulse Note highlights the top engineering pain points from recent Play Store reviews, along with recommended sprint items.",
-        "Support Team": "Hi Support team,\n\nThis week's Kuvera Pulse Note covers the top escalation themes and agent talking points for this week.",
-        "Leadership": "Hi,\n\nThis week's Kuvera Pulse Note summarises the most critical sentiment signals and strategic recommendations."
+        "Product Team": "Hi team,\n\nThis week's Groww Pulse Note highlights the top engineering pain points from recent Play Store reviews, along with recommended sprint items.",
+        "Support Team": "Hi Support team,\n\nThis week's Groww Pulse Note covers the top escalation themes and agent talking points for this week.",
+        "Leadership": "Hi,\n\nThis week's Groww Pulse Note summarises the most critical sentiment signals and strategic recommendations."
     }
     
-    body_intro = role_intros.get(role, "Please find this week's Kuvera Pulse Note attached.")
+    body_intro = role_intros.get(role, "Please find this week's Groww Pulse Note attached.")
     
     # Create body text
     if pdf_exists:
@@ -56,8 +56,8 @@ This note covers:
   • One high-impact strategic recommendation
 
 Regards,
-Kuvera Pulse AI Engine
-(Automated weekly digest — Kuvera by CRED)"""
+Groww Pulse AI Engine
+(Automated weekly digest — Groww)"""
     else:
         body = f"""{body_intro}
 
@@ -65,7 +65,7 @@ Kuvera Pulse AI Engine
 
 ---
 Regards,
-Kuvera Pulse AI Engine"""
+Groww Pulse AI Engine"""
     
     # Generate Gmail compose URL
     # Using 'su' for subject as it is the standard for Gmail compose view (view=cm)
@@ -89,6 +89,7 @@ Kuvera Pulse AI Engine"""
         "gmail_compose_url": gmail_compose_url,
         "recipient_email": recipient_email,
         "subject": subject,
+        "body": body,
         "instructions": {
             "step1": "Click the Gmail compose URL to open Gmail",
             "step2": "Download the PDF from the link provided in the email body",

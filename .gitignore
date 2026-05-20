@@ -10,3 +10,4 @@ backend/data/outputs/*.html
 backend/data/outputs/*.md
 backend/data/tokens/
 *.token
+backend/credentials.json

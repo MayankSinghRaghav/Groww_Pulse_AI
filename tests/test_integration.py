@@ -9,10 +9,10 @@ import datetime
 def mock_reviews():
     return [
         {"id": "1", "content": "This app is great for mutual funds!", "date": datetime.datetime.now(), "rating": 5},
-        {"id": "2", "content": "App keeps crashing on login page.", "date": datetime.datetime.now(), "rating": 1},
+        {"id": "2", "content": "App keeps crashing every time I open it.", "date": datetime.datetime.now(), "rating": 1},
         {"id": "3", "content": "Confusing UI, hard to find portfolio.", "date": datetime.datetime.now(), "rating": 3},
         {"id": "4", "content": "I love the new analytics feature.", "date": datetime.datetime.now(), "rating": 4},
-        {"id": "5", "content": "Customer support is very slow to reply.", "date": datetime.datetime.now(), "rating": 2},
+        {"id": "5", "content": "Customer support is very helpful.", "date": datetime.datetime.now(), "rating": 2},
     ]
 
 def test_language_and_spelling_filter():

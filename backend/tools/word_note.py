@@ -21,7 +21,7 @@ def generate_word_note(role: str, insights_data: dict, action_ideas: Any, output
         header = doc.sections[0].header
         htable = header.add_table(1, 2, Inches(6.5))
         htab_cells = htable.rows[0].cells
-        htab_cells[0].text = f"KUVERA PULSE - {role.upper()}"
+        htab_cells[0].text = f"GROWW PULSE - {role.upper()}"
         htab_cells[1].text = datetime.datetime.now().strftime("%B %d, %Y")
         htab_cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
         
@@ -75,7 +75,7 @@ def generate_word_note(role: str, insights_data: dict, action_ideas: Any, output
             doc.add_paragraph(action, style='List Bullet')
             
         # Footer
-        doc.add_paragraph("\nCONFIDENTIAL | Kuvera Pulse AI Engine")
+        doc.add_paragraph("\nCONFIDENTIAL | Groww Pulse AI Engine")
         
         doc.save(output_path)
         logger.info(f"Word note generated: {output_path}")

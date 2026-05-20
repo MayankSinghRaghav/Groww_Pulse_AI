@@ -3,110 +3,915 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kuvera Pulse Dashboard</title>
-    <meta name="description" content="Kuvera Weekly Pulse Dashboard — AI-powered app review insights and stakeholder briefings.">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>Groww Pulsator — AI-Powered Review Intelligence</title>
+    <meta name="description" content="Groww Pulsator — Premium AI-powered app review analytics, sentiment analysis, and stakeholder briefings.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for stunning interactive animated charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --brand-cyan: #00D1FF;
-            --brand-cyan-glow: rgba(0, 209, 255, 0.3);
-            --brand-black: #0F0F0F;
-            --text-main: #2D3436;
-            --bg-light: #F4F7F6;
+            /* Official Groww Branding Theme */
+            --brand-blue: #5367F5;
+            --brand-blue-glow: rgba(83, 103, 245, 0.18);
+            --brand-green: #00D09C;
+            --brand-green-logo: #08F6B6;
+            --accent-blue-a: #B1D0FB;
+            --accent-blue-b: #E5F4FD;
+            
+            /* Interface Layout Colors - Premium Slate Light Theme */
+            --bg-page: #F6F9FD;
+            --bg-card: #FFFFFF;
+            --bg-card-hover: #F1F6FC;
+            --border-color: rgba(177, 208, 251, 0.45); /* Accent Blue A at 45% */
+            --text-main: #1C2331;
+            --text-muted: #5E6E85;
             --white: #FFFFFF;
-            --glass: rgba(255, 255, 255, 0.95);
-            --muted: #636E72;
-            --success: #00B894;
-            --warning: #FDCB6E;
-            --danger: #D63031;
+            
+            --success: #00D09C;
+            --warning: #FFA726;
+            --danger: #EF5350;
         }
-        
-        * { box-sizing: border-box; }
-        
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-light);
-            color: var(--text-main);
+
+        body.dark-theme {
+            /* Layout Color Overrides for Premium Night Mode */
+            --bg-page: #0D1117;
+            --bg-card: #161B22;
+            --bg-card-hover: #21262D;
+            --border-color: rgba(177, 208, 251, 0.12); /* Softer borders for dark theme */
+            --text-main: #F0F6FC;
+            --text-muted: #8B949E;
+            --white: #0D1117; /* Dark header and sections */
+            --accent-blue-b: #161B22; /* Dark card tint */
+            --accent-blue-a: #30363D; /* Dark selected border color */
+            --brand-blue-glow: rgba(83, 103, 245, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        
-        header {
-            background-color: var(--brand-black);
-            color: white;
-            padding: 40px 20px;
-            text-align: center;
-            border-top: 6px solid var(--brand-cyan);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        
-        .logo {
-            font-size: 36px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-        
-        .logo span {
-            color: var(--brand-cyan);
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 30px;
-        }
-        
-        .section-title {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--brand-black);
-            margin: 40px 0 20px;
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            overflow-x: hidden;
         }
-        
-        .section-title::before {
-            content: "";
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
             width: 8px;
-            height: 24px;
-            background: var(--brand-cyan);
-            margin-right: 15px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-page);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(83, 103, 245, 0.15);
             border-radius: 4px;
-            flex-shrink: 0;
         }
-        
-        .card {
-            background: var(--glass);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(83, 103, 245, 0.25);
         }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 45px rgba(0,0,0,0.07);
-        }
-        
-        .theme-header {
+
+        /* Header Navigation styling */
+        header {
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(83, 103, 245, 0.03);
         }
-        
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-box {
+            background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-logo) 100%);
+            color: #0C1A30;
+            font-weight: 800;
+            font-size: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 208, 156, 0.25);
+        }
+
+        .brand-meta h1 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: var(--text-main);
+        }
+
+        .brand-meta p {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .header-filters {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-pill {
+            background: var(--accent-blue-b);
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-pill:hover {
+            background: rgba(177, 208, 251, 0.3);
+            color: var(--brand-blue);
+        }
+
+        .filter-pill.active {
+            background: var(--brand-blue);
+            color: var(--white);
+            box-shadow: 0 4px 10px var(--brand-blue-glow);
+        }
+
+        .header-btn-sync {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            color: var(--brand-blue);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .header-btn-sync:hover {
+            background: var(--accent-blue-b);
+            border-color: var(--accent-blue-a);
+        }
+
+        .header-theme-toggle {
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--accent-blue-b);
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .header-theme-toggle:hover {
+            color: var(--brand-blue);
+            background: rgba(177, 208, 251, 0.3);
+        }
+
+        /* Navigation Tabs block */
+        .nav-tabs-container {
+            background-color: var(--white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 24px;
+            display: flex;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(83, 103, 245, 0.02);
+        }
+
+        .nav-tab {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 16px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-tab:hover {
+            color: var(--brand-blue);
+        }
+
+        .nav-tab.active {
+            color: var(--brand-blue);
+            border-bottom-color: var(--brand-blue);
+        }
+
+        /* Container & Grid layout */
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            margin: 20px auto;
+            padding: 0 24px;
+            flex: 1;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards & Styling panels */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(83, 103, 245, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .card.hoverable:hover {
+            border-color: var(--accent-blue-a);
+            background-color: var(--bg-card-hover);
+            box-shadow: 0 6px 20px rgba(83, 103, 245, 0.06);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+        }
+
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+        }
+
+        /* Sync panel details */
+        .sync-summary-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--accent-blue-b);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            font-size: 13px;
+        }
+
+        .sync-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .sync-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+        }
+
+        .sync-item strong {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .sync-item span.indicator {
+            color: var(--brand-blue);
+            font-size: 10px;
+        }
+
+        .sync-item.reviews-count {
+            background: rgba(83, 103, 245, 0.1);
+            color: var(--brand-blue);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .btn-refresh {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .btn-refresh:hover {
+            color: var(--brand-blue);
+        }
+
+        /* AI Categorization Progress Section */
+        .ai-categorize-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(83, 103, 245, 0.02);
+        }
+
+        .ai-cat-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .ai-icon {
+            background: rgba(83, 103, 245, 0.1);
+            color: var(--brand-blue);
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .ai-meta h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .ai-meta p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .ai-meta p strong {
+            color: var(--warning);
+        }
+
+        .ai-cat-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .ai-progress-container {
+            width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-progress-bg {
+            background: var(--accent-blue-b);
+            height: 6px;
+            border-radius: 3px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .ai-progress-fill {
+            background: linear-gradient(90deg, var(--brand-blue) 0%, #7586F8 100%);
+            height: 100%;
+            width: 9%;
+            border-radius: 3px;
+            box-shadow: 0 0 10px var(--brand-blue-glow);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ai-progress-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            min-width: 25px;
+        }
+
+        .btn-categorize {
+            background: var(--brand-blue);
+            color: var(--white);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--brand-blue-glow);
+            transition: all 0.2s ease;
+        }
+
+        .btn-categorize:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px var(--brand-blue-glow);
+            filter: brightness(1.05);
+        }
+
+        /* Filter Control Panel */
+        .filter-panel {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(83, 103, 245, 0.02);
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .filter-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+
+        .btn-pill-group {
+            display: flex;
+            background: var(--accent-blue-b);
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .btn-pill {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-pill:hover {
+            color: var(--brand-blue);
+        }
+
+        .btn-pill.active {
+            background: var(--white);
+            color: var(--brand-blue);
+            box-shadow: 0 2px 6px rgba(83, 103, 245, 0.08);
+        }
+
+        .btn-reset {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .btn-reset:hover {
+            color: var(--brand-blue);
+        }
+
+        /* Rating Distribution Bars */
+        .rating-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+            font-size: 13px;
+        }
+
+        .rating-star-lbl {
+            min-width: 24px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .rating-progress-bg {
+            background: var(--accent-blue-b);
+            height: 14px;
+            border-radius: 8px;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .rating-progress-fill {
+            height: 100%;
+            border-radius: 8px;
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .rating-progress-fill.star-5 { background: var(--brand-green); }
+        .rating-progress-fill.star-4 { background: #5367F5; }
+        .rating-progress-fill.star-3 { background: var(--warning); }
+        .rating-progress-fill.star-2 { background: #FF7043; }
+        .rating-progress-fill.star-1 { background: var(--danger); }
+
+        .rating-count-lbl {
+            min-width: 35px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .rating-percent-lbl {
+            min-width: 45px;
+            text-align: right;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Health Metrics & NPS Score */
+        .health-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 16px;
+            height: 100%;
+        }
+
+        .nps-card {
+            background: var(--accent-blue-b);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .nps-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .nps-score {
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--brand-green);
+            line-height: 1;
+        }
+
+        .nps-lbl {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .nps-status {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--brand-green);
+            margin-top: 2px;
+        }
+
+        .nps-list {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nps-list-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .nps-list-item span.count {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .metrics-mini-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .metric-mini-card {
+            background: var(--accent-blue-b);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-mini-meta h5 {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .metric-mini-meta p {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .metric-mini-icon {
+            font-size: 18px;
+            color: var(--text-muted);
+        }
+
+        .sentiment-split-card {
+            grid-column: 1 / -1;
+            background: var(--accent-blue-b);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+
+        .sent-split-header {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .sent-split-bar {
+            height: 10px;
+            border-radius: 5px;
+            display: flex;
+            overflow: hidden;
+            background: rgba(83, 103, 245, 0.1);
+        }
+
+        .sent-split-segment {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .sent-split-segment.positive { background: var(--brand-green); }
+        .sent-split-segment.neutral { background: var(--warning); }
+        .sent-split-segment.negative { background: var(--danger); }
+
+        .sent-split-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-top: 8px;
+            color: var(--text-muted);
+        }
+
+        .sent-split-lbl-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sent-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .sent-dot.positive { background: var(--brand-green); }
+        .sent-dot.neutral { background: var(--warning); }
+        .sent-dot.negative { background: var(--danger); }
+
+        /* Search review bars */
+        .search-container {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 12px 16px 12px 42px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 10px var(--brand-blue-glow);
+        }
+
+        .search-icon-svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Reviews lists tables */
+        .reviews-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 450px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .review-row {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: background 0.15s;
+        }
+
+        .review-row:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .review-row-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .review-stars {
+            display: flex;
+            gap: 2px;
+            color: #FFA726;
+            font-size: 12px;
+        }
+
+        .review-platform {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .review-content {
+            font-size: 13px;
+            color: var(--text-main);
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        /* Metrics Big Cards (Analytics tab) */
+        .metric-big-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(83, 103, 245, 0.02);
+        }
+
+        .metric-big-meta h4 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .metric-big-meta p.value {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .metric-big-meta p.subtext {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .metric-big-icon-box {
+            background: rgba(83, 103, 245, 0.05);
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--brand-blue);
+        }
+
+        .metric-big-card.active-accent::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--brand-blue);
+        }
+
+        /* Analytics Tab Charts layout */
+        .chart-box {
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Word Cloud styling */
+        .word-cloud-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+            padding: 20px;
+        }
+
+        .cloud-word {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 700;
+            border-radius: 20px;
+            padding: 6px 14px;
+            background: var(--accent-blue-b);
+            border: 1px solid var(--border-color);
+        }
+
+        .cloud-word:hover {
+            transform: scale(1.05);
+            background: var(--brand-blue);
+            color: var(--white);
+            box-shadow: 0 4px 15px var(--brand-blue-glow);
+            border-color: var(--brand-blue);
+        }
+
+        /* Reporting elements */
         .badge {
-            background: #E1F9FF;
-            color: #0084A3;
+            background: var(--accent-blue-b);
+            color: var(--brand-blue);
             padding: 6px 14px;
             border-radius: 30px;
             font-size: 13px;
@@ -114,18 +919,18 @@
         }
         
         .quote {
-            font-size: 15px;
-            color: #636E72;
+            font-size: 14px;
+            color: var(--text-muted);
             font-style: italic;
             margin-bottom: 15px;
             padding: 15px;
-            background: #F9F9F9;
+            background: var(--accent-blue-b);
             border-radius: 8px;
-            border-left: 4px solid #DFE6E9;
+            border-left: 4px solid var(--brand-blue);
         }
         
         .action-card {
-            background: linear-gradient(135deg, #00D1FF 0%, #0084A3 100%);
+            background: linear-gradient(135deg, var(--brand-blue) 0%, #3F52D9 100%);
             color: white;
             padding: 30px;
             border-radius: 16px;
@@ -147,7 +952,7 @@
         }
         
         .stakeholder-card {
-            border-left: 5px solid var(--brand-cyan);
+            border-left: 5px solid var(--brand-blue);
         }
         
         .btn-action {
@@ -162,28 +967,31 @@
             transition: all 0.3s ease;
             cursor: pointer;
             border: none;
-            font-family: 'Outfit', sans-serif;
+            font-family: inherit;
             position: relative;
             overflow: hidden;
         }
         
         .btn-primary {
-            background: var(--brand-black);
-            color: white;
+            background: var(--brand-blue);
+            color: var(--white);
+            box-shadow: 0 4px 12px var(--brand-blue-glow);
         }
         
         .btn-primary:hover {
-            background: var(--brand-cyan);
-            color: black;
+            background: #3B50DF;
+            color: var(--white);
         }
         
         .btn-secondary {
-            background: #636E72;
-            color: white;
+            background: var(--white);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
         }
         
         .btn-secondary:hover {
-            background: #2D3436;
+            background: var(--accent-blue-b);
+            border-color: var(--accent-blue-a);
         }
         
         .btn-action:disabled {
@@ -230,16 +1038,15 @@
             font-size: 14px;
             font-weight: 600;
             color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             animation: slideIn 0.3s ease, slideOut 0.3s ease 3.7s forwards;
             max-width: 400px;
-            font-family: 'Outfit', sans-serif;
         }
         
         .toast.success { background: var(--success); }
         .toast.error { background: var(--danger); }
-        .toast.info { background: #0984E3; }
-        .toast.warning { background: #E17055; }
+        .toast.info { background: var(--brand-blue); }
+        .toast.warning { background: var(--warning); }
         
         @keyframes slideIn {
             from { transform: translateX(120%); opacity: 0; }
@@ -251,54 +1058,6 @@
             to { transform: translateX(120%); opacity: 0; }
         }
         
-        /* Header buttons */
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .header-btn {
-            background: var(--brand-cyan);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 800;
-            cursor: pointer;
-            font-family: 'Outfit';
-            box-shadow: 0 4px 15px var(--brand-cyan-glow);
-            transition: all 0.2s ease;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .header-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px var(--brand-cyan-glow);
-        }
-        
-        .header-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .header-btn.secondary {
-            background: rgba(255,255,255,0.15);
-            color: white;
-            box-shadow: none;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .header-btn.secondary:hover {
-            background: rgba(255,255,255,0.25);
-            box-shadow: none;
-        }
-        
         /* PDF Modal */
         .modal-overlay {
             position: fixed;
@@ -306,7 +1065,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.6);
+            background: rgba(12, 26, 48, 0.4);
             backdrop-filter: blur(4px);
             z-index: 1000;
             display: none;
@@ -320,7 +1079,8 @@
         }
         
         .modal {
-            background: white;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 20px;
             width: 90%;
             max-width: 800px;
@@ -328,12 +1088,12 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 25px 60px rgba(83, 103, 245, 0.15);
         }
         
         .modal-header {
             padding: 20px 24px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -342,6 +1102,7 @@
         .modal-header h3 {
             margin: 0;
             font-size: 18px;
+            color: var(--text-main);
         }
         
         .modal-close {
@@ -349,19 +1110,21 @@
             border: none;
             font-size: 24px;
             cursor: pointer;
-            color: var(--muted);
+            color: var(--text-muted);
             padding: 4px 8px;
             border-radius: 6px;
             transition: background 0.2s;
         }
         
         .modal-close:hover {
-            background: #f0f0f0;
+            background: var(--accent-blue-b);
+            color: var(--brand-blue);
         }
         
         .modal-body {
             flex: 1;
             overflow: hidden;
+            background: var(--bg-page);
         }
         
         .modal-body iframe {
@@ -372,28 +1135,27 @@
         
         .modal-footer {
             padding: 16px 24px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--border-color);
             display: flex;
             gap: 10px;
             justify-content: flex-end;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
         footer {
             text-align: center;
-            padding: 60px 0;
-            color: #B2BEC3;
-            font-size: 14px;
+            padding: 40px 0;
+            color: var(--text-muted);
+            font-size: 12px;
             letter-spacing: 1px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+            background: var(--white);
         }
 
-        @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
-            .modal { width: 95%; height: 80vh; }
+        @media (max-width: 1024px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .grid-5 { grid-template-columns: 1fr 1fr; }
+            .health-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -415,7 +1177,7 @@
                 <a id="modal-download-link" href="#" target="_blank" class="btn-action btn-secondary" download>
                     ⬇ Download PDF
                 </a>
-                <a id="modal-word-link" href="#" target="_blank" class="btn-action btn-secondary" download style="background: #2b5797;">
+                <a id="modal-word-link" href="#" target="_blank" class="btn-action btn-secondary" download style="background: #2b5797; color: white;">
                     📘 Download Word
                 </a>
                 <button class="btn-action btn-primary" onclick="closePdfModal()">Close</button>
@@ -423,58 +1185,409 @@
         </div>
     </div>
 
+    <!-- Main Navigation Header -->
     <header>
-        <div class="logo">KUVERA <span>PULSE</span></div>
-        <div id="status-bar" style="font-size: 13px; margin-top: 10px; opacity: 0.8; font-weight: 300;">
-            <span id="connection-status" style="color: #FFCC00;">●</span> Connecting to Insights Engine...
+        <div class="header-left">
+            <div class="logo-box">G</div>
+            <div class="brand-meta">
+                <h1>Groww Pulsator</h1>
+                <p>AI-Powered Review Intelligence</p>
+            </div>
         </div>
-        <div class="header-actions">
-            <button id="run-btn" class="header-btn" onclick="triggerPulse()">
-                🚀 GENERATE NEW PULSE
+        <div class="header-filters">
+            <button class="filter-pill active" onclick="setPlatformFilter('all')" id="platform-all">All</button>
+            <button class="filter-pill" onclick="setPlatformFilter('android')" id="platform-android">Android</button>
+            <button class="filter-pill" onclick="setPlatformFilter('ios')" id="platform-ios">iOS</button>
+            
+            <span style="width: 1px; height: 20px; background: var(--border-color); margin: 0 8px;"></span>
+            
+            <a id="connect-gmail-btn" class="header-btn-sync" href="#" style="display: none; background: var(--accent-blue-b); border-color: var(--accent-blue-a); color: var(--brand-blue);">
+                🔑 Connect Gmail
+            </a>
+            <span id="gmail-status" style="display: none; background: rgba(0, 208, 156, 0.12); color: var(--brand-green); border: 1px solid rgba(0, 208, 156, 0.3); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                ✓ Gmail Connected
+            </span>
+            
+            <button class="header-btn-sync" onclick="triggerPulse()">
+                <span>🔄</span> Sync Android
+            </button>
+            <button class="header-theme-toggle" onclick="toggleThemeMode()" title="Toggle Day/Night Mode">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="color: var(--brand-blue);">
+                    <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM2.343 3.05a.5.5 0 0 1 .707 0l1.414 1.414a.5.5 0 0 1-.707.707L2.343 3.757a.5.5 0 0 1 0-.707z"/>
+                </svg>
             </button>
         </div>
     </header>
-    
+
+    <!-- Secondary Tab Bar -->
+    <div class="nav-tabs-container">
+        <button class="nav-tab active" onclick="switchTab('overview')" id="tab-overview">
+            <span>📝</span> Reviews
+        </button>
+        <button class="nav-tab" onclick="switchTab('analytics')" id="tab-analytics">
+            <span>📊</span> Analytics
+        </button>
+        <button class="nav-tab" onclick="switchTab('categories')" id="tab-categories">
+            <span>🏷️</span> Categories
+        </button>
+        <button class="nav-tab" onclick="switchTab('wordcloud')" id="tab-wordcloud">
+            <span>☁️</span> Word Cloud
+        </button>
+        <button class="nav-tab" onclick="switchTab('ideation')" id="tab-ideation">
+            <span>💡</span> Ideation
+        </button>
+        <button class="nav-tab" onclick="switchTab('reporting')" id="tab-reporting">
+            <span>📁</span> Reporting
+        </button>
+    </div>
+
+    <!-- Page Contents Container -->
     <div class="container">
-        <div class="grid">
-            <div id="themes-container">
-                <div class="section-title">Critical Feedback Themes</div>
-                <div class="card" style="text-align: center; color: #999;">
-                    Connecting to AI...
+        
+        <!-- SUMMARY BANNER (Reviews status overview) -->
+        <div class="sync-summary-bar">
+            <div class="sync-left">
+                <div class="sync-item reviews-count">
+                    <span>💬</span> <strong id="summary-reviews-count">6,792</strong> reviews
+                </div>
+                <div class="sync-item">
+                    <span class="indicator">●</span> Android: <strong id="android-sync-time">8h ago</strong>
+                </div>
+                <div class="sync-item">
+                    <span class="indicator">●</span> iOS: <strong id="ios-sync-time">8h ago</strong>
+                </div>
+            </div>
+            <button class="btn-refresh" onclick="fetchPulseData()">
+                <span>🔄</span> Refresh
+            </button>
+        </div>
+
+        <!-- AI CATEGORIZATION PROGRESS PANEL -->
+        <div class="ai-categorize-panel">
+            <div class="ai-cat-left">
+                <div class="ai-icon">🤖</div>
+                <div class="ai-meta">
+                    <h4>AI Categorization</h4>
+                    <p><span id="categorized-count">590</span> of <span id="total-cat-count">6,792</span> categorized — <strong id="pending-cat-count">6,202 pending</strong></p>
+                </div>
+            </div>
+            <div class="ai-cat-right">
+                <div class="ai-progress-container">
+                    <div class="ai-progress-bg">
+                        <div class="ai-progress-fill" id="ai-progress-fill"></div>
+                    </div>
+                    <div class="ai-progress-text" id="ai-progress-text">9%</div>
+                </div>
+                <button class="btn-categorize" onclick="simulateCategorization()">Categorize</button>
+            </div>
+        </div>
+
+        <!-- TIME PERIOD & FILTER BAR -->
+        <div class="filter-panel">
+            <div class="filter-group">
+                <span class="filter-label">Platform</span>
+                <div class="btn-pill-group">
+                    <button class="btn-pill active" onclick="setPlatformFilter('all')" id="pill-platform-all">All</button>
+                    <button class="btn-pill" onclick="setPlatformFilter('android')" id="pill-platform-android">Android</button>
+                    <button class="btn-pill" onclick="setPlatformFilter('ios')" id="pill-platform-ios">iOS</button>
+                </div>
+                
+                <span style="width: 1px; height: 16px; background: var(--border-color); margin: 0 8px;"></span>
+
+                <span class="filter-label">Time Period</span>
+                <div class="btn-pill-group">
+                    <button class="btn-pill" onclick="setTimeFilter('today')" id="time-today">Today</button>
+                    <button class="btn-pill" onclick="setTimeFilter('yesterday')" id="time-yesterday">Yesterday</button>
+                    <button class="btn-pill" onclick="setTimeFilter('7days')" id="time-7days">Last 7 Days</button>
+                    <button class="btn-pill" onclick="setTimeFilter('15days')" id="time-15days">Last 15 Days</button>
+                    <button class="btn-pill active" onclick="setTimeFilter('30days')" id="time-30days">Last 30 Days</button>
+                </div>
+            </div>
+            <button class="btn-reset" onclick="resetFilters()">Reset</button>
+        </div>
+
+
+        <!-- TAB 1: REVIEWS (Main Dashboard overview) -->
+        <div class="tab-content active" id="content-overview">
+            <div class="grid-2">
+                
+                <!-- Rating Distribution Panel -->
+                <div class="card">
+                    <h3 style="font-size: 15px; margin-bottom: 20px; font-weight: 700; color: var(--text-main);">Rating Distribution</h3>
+                    <div id="distribution-bars-container">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+
+                <!-- Health Metrics Panel -->
+                <div class="card">
+                    <h3 style="font-size: 15px; margin-bottom: 20px; font-weight: 700; color: var(--text-main);">Health Metrics</h3>
+                    <div class="health-grid">
+                        <div class="nps-card">
+                            <div class="nps-meta">
+                                <span class="nps-score" id="nps-score">+78</span>
+                                <div>
+                                    <div class="nps-lbl">NPS Score</div>
+                                    <div class="nps-status" id="nps-status">Excellent</div>
+                                </div>
+                            </div>
+                            <div class="nps-list">
+                                <div class="nps-list-item">
+                                    <span>🟢 Promoters (4-5★)</span>
+                                    <span class="count" id="nps-promoters">799</span>
+                                </div>
+                                <div class="nps-list-item">
+                                    <span>🟡 Passives (3★)</span>
+                                    <span class="count" id="nps-passives">82</span>
+                                </div>
+                                <div class="nps-list-item">
+                                    <span>🔴 Detractors (1-2★)</span>
+                                    <span class="count" id="nps-detractors">119</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metrics-mini-col">
+                            <div class="metric-mini-card">
+                                <div class="metric-mini-meta">
+                                    <h5>Total Reviews</h5>
+                                    <p id="health-total-reviews">1,000</p>
+                                </div>
+                                <div class="metric-mini-icon">💬</div>
+                            </div>
+                            <div class="metric-mini-card">
+                                <div class="metric-mini-meta">
+                                    <h5>Avg Rating</h5>
+                                    <p id="health-avg-rating">4.5 ★</p>
+                                </div>
+                                <div class="metric-mini-icon" style="color: var(--warning);">★</div>
+                            </div>
+                        </div>
+
+                        <div class="sentiment-split-card">
+                            <div class="sent-split-header">Sentiment Split</div>
+                            <div class="sent-split-bar">
+                                <div class="sent-split-segment positive" id="split-bar-pos" style="width: 80%"></div>
+                                <div class="sent-split-segment neutral" id="split-bar-neu" style="width: 10%"></div>
+                                <div class="sent-split-segment negative" id="split-bar-neg" style="width: 10%"></div>
+                            </div>
+                            <div class="sent-split-labels">
+                                <div class="sent-split-lbl-item">
+                                    <span class="sent-dot positive"></span> Positive (<span id="split-lbl-pos">80%</span>)
+                                </div>
+                                <div class="sent-split-lbl-item">
+                                    <span class="sent-dot neutral"></span> Neutral (<span id="split-lbl-neu">10%</span>)
+                                </div>
+                                <div class="sent-split-lbl-item">
+                                    <span class="sent-dot negative"></span> Negative (<span id="split-lbl-neg">10%</span>)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Reviews Searching List -->
+            <div class="card">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="review-search" placeholder="Search reviews..." oninput="handleSearch()">
+                    <span class="search-icon-svg">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </span>
+                </div>
+                <div class="reviews-list" id="reviews-list-container">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TAB 2: ANALYTICS (Charts & Metric Cards) -->
+        <div class="tab-content" id="content-analytics">
+            <!-- Big Metric Cards Row -->
+            <div class="grid-5" style="margin-bottom: 24px;">
+                <div class="metric-big-card active-accent">
+                    <div class="metric-big-meta">
+                        <h4>Total Reviews</h4>
+                        <p class="value" id="big-total-reviews">1,000</p>
+                        <p class="subtext">All time volume</p>
+                    </div>
+                    <div class="metric-big-icon-box">💬</div>
+                </div>
+
+                <div class="metric-big-card">
+                    <div class="metric-big-meta">
+                        <h4>Avg Rating</h4>
+                        <p class="value" id="big-avg-rating">4.5</p>
+                        <p class="subtext">Out of 5.0 stars</p>
+                    </div>
+                    <div class="metric-big-icon-box" style="color: var(--warning);">★</div>
+                </div>
+
+                <div class="metric-big-card">
+                    <div class="metric-big-meta">
+                        <h4>Positive</h4>
+                        <p class="value" id="big-positive-val">881</p>
+                        <p class="subtext" id="big-positive-pct">88.1% of total</p>
+                    </div>
+                    <div class="metric-big-icon-box" style="color: var(--brand-green);">📈</div>
+                </div>
+
+                <div class="metric-big-card">
+                    <div class="metric-big-meta">
+                        <h4>Negative</h4>
+                        <p class="value" id="big-negative-val">97</p>
+                        <p class="subtext" id="big-negative-pct">9.7% of total</p>
+                    </div>
+                    <div class="metric-big-icon-box" style="color: var(--danger);">📉</div>
+                </div>
+
+                <div class="metric-big-card">
+                    <div class="metric-big-meta">
+                        <h4>Neutral</h4>
+                        <p class="value" id="big-neutral-val">22</p>
+                        <p class="subtext" id="big-neutral-pct">2.2% of total</p>
+                    </div>
+                    <div class="metric-big-icon-box">📊</div>
                 </div>
             </div>
 
-            <div>
-                <div class="section-title">Stakeholder Drafts</div>
-                <div id="drafts-container">
-                    <div class="card" style="text-align: center; color: #999; font-size: 14px;">
-                        Loading briefings...
+            <!-- Charts Grid Row -->
+            <div class="grid-2">
+                <div class="card">
+                    <h3 style="font-size: 15px; margin-bottom: 20px; font-weight: 700; color: var(--text-main);">Sentiment Analysis</h3>
+                    <div class="chart-box">
+                        <canvas id="sentimentChart" style="max-height: 250px; width: 100%;"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="font-size: 15px; margin-bottom: 20px; font-weight: 700; color: var(--text-main);">Rating Distribution</h3>
+                    <div class="chart-box">
+                        <canvas id="ratingsChart" style="max-height: 250px; width: 100%;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trend Analysis block -->
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h3 style="font-size: 15px; font-weight: 700; color: var(--text-main);">Trend Analysis</h3>
+                    <div class="btn-pill-group">
+                        <button class="btn-pill active" id="trend-sentiment-btn">Sentiment</button>
+                        <button class="btn-pill" id="trend-categories-btn">Categories</button>
+                    </div>
+                </div>
+                <div class="chart-box" style="min-height: 180px;">
+                    <canvas id="trendsChart" style="max-height: 200px; width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TAB 3: CATEGORIES (Feedback Themes) -->
+        <div class="tab-content" id="content-categories">
+            <div class="section-title" style="margin-bottom: 20px; font-weight: 800; font-size: 16px; letter-spacing: 0.5px; color: var(--text-main);">Critical Feedback Themes</div>
+            <div id="themes-container">
+                <div class="card" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                    🔄 Fetching categories...
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TAB 4: WORD CLOUD -->
+        <div class="tab-content" id="content-wordcloud">
+            <div class="card">
+                <h3 style="font-size: 15px; margin-bottom: 12px; font-weight: 700; color: var(--text-main);">Interactive Keyword Frequency</h3>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 24px;">Click a word to filter the reviews list below by this keyword.</p>
+                <div class="word-cloud-container" id="word-cloud-words">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+
+        <!-- TAB 5: IDEATION (Stakeholder Actions) -->
+        <div class="tab-content" id="content-ideation">
+            <h3 style="font-size: 15px; margin-bottom: 24px; font-weight: 700; color: var(--text-main);">AI-Generated Stakeholder Action Briefs</h3>
+            <div class="grid-3" id="ideation-cards-container">
+                <!-- Filled dynamically -->
+            </div>
+        </div>
+
+
+        <!-- TAB 6: REPORTING (Emails & Brief PDF Briefings) -->
+        <div class="tab-content" id="content-reporting">
+            <div class="grid-2">
+                <div>
+                    <h3 style="font-size: 15px; margin-bottom: 20px; font-weight: 700; color: var(--text-main);">Stakeholder Draft Briefings</h3>
+                    <div id="drafts-container">
+                        <div class="card" style="text-align: center; color: var(--text-muted); font-size: 13px;">
+                            🔄 Loading briefing drafts...
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card" style="border-left: 4px solid var(--brand-blue);">
+                        <h4 style="font-size: 15px; margin-bottom: 12px; font-weight: 700; color: var(--text-main);">🚀 Automated Execution Pipeline</h4>
+                        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;">
+                            Trigger a weekly ingestion, classification, and report briefing pipeline. The system automatically scrapes reviews from Google Play Store, classifies themes, generates branded stakeholder PDFs, and drafts secure Gmail briefs.
+                        </p>
+                        <button class="btn-action btn-primary" onclick="triggerPulse()" id="run-btn-reporting" style="background: var(--brand-blue); color: var(--white); box-shadow: 0 4px 15px var(--brand-blue-glow); border: none; font-weight: 700; width: 100%; justify-content: center;">
+                            🚀 RUN FULL EXECUTION PIPELINE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JSON raw debug data panel -->
+            <div class="debug-section">
+                <button class="btn-action btn-secondary" onclick="toggleDebugData()" style="margin-top: 40px; width: 100%; justify-content: center; background: rgba(83,103,245,0.03); color: var(--text-muted); border: 1px dashed rgba(83,103,245,0.15); border-radius: 12px; font-size: 11px;">
+                    <span class="btn-text">🛠 View Technical Ingestion JSON Payload</span>
+                </button>
+                <div id="debug-data-container" style="display: none; margin-top: 20px;">
+                    <div class="section-title" style="margin-bottom: 14px; font-size: 13px; color: var(--text-main);">Raw Technical Insights Ingestion Payload</div>
+                    <div class="card" style="background: #0C1A30; color: #9AE6B4; font-family: 'Courier New', Courier, monospace; padding: 25px; overflow-x: auto; font-size: 12px; border: 1px solid var(--border-color);">
+                        <pre id="json-raw">{}</pre>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="debug-section">
-            <button class="btn-action btn-secondary" onclick="toggleDebugData()" style="margin-top: 40px; width: 100%; justify-content: center; background: rgba(0,0,0,0.03); color: var(--muted); border: 1px dashed rgba(0,0,0,0.1); border-radius: 12px;">
-                <span class="btn-text">🛠 View Technical Pulse Data (JSON)</span>
-            </button>
-            <div id="debug-data-container" style="display: none; margin-top: 20px;">
-                <div class="section-title">Technical Pulse Data (JSON)</div>
-                <div class="card" style="background: #1E1E1E; color: #D4D4D4; font-family: 'Courier New', Courier, monospace; padding: 25px; overflow-x: auto; font-size: 12px; border: none;">
-                    <pre id="json-raw">{}</pre>
-                </div>
-            </div>
-        </div>
     </div>
     
-    <footer>PROPRIETARY REPORT BY KUVERA BY CRED</footer>
+    <footer style="background: var(--white); color: var(--text-muted);">PROPRIETARY REPORT BY GROWW © 2026</footer>
 
+    <!-- DYNAMIC DASHBOARD DATA & FLOW ENGINE -->
     <script>
-        const DEFAULT_BACKEND = "https://kuvera-pulse.onrender.com"; 
+        const DEFAULT_BACKEND = "http://localhost:8000"; 
         const params = new URLSearchParams(window.location.search);
         const BACKEND_URL = params.get('backend') || DEFAULT_BACKEND;
 
-        // ==================== Toast Notifications ====================
+        // Core data structures
+        let allReviews = [];
+        let filteredReviews = [];
+        let pulseInsights = {};
+        let pulseEmails = [];
+        
+        // Active Filter states
+        let platformFilter = 'all';
+        let timeFilter = '30days';
+        let searchQuery = '';
+        let selectedKeyword = '';
+
+        // Chart instances
+        let sentimentChartInstance = null;
+        let ratingsChartInstance = null;
+        let trendsChartInstance = null;
+
+        // ==================== Toast & UI Helpers ====================
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -484,19 +1597,55 @@
             setTimeout(() => toast.remove(), 4000);
         }
 
-        // ==================== Pulse Generation ====================
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(`content-${tabId}`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            // Special initialization for charts
+            if (tabId === 'analytics') {
+                // Short timeout to guarantee layout renders before loading charts
+                setTimeout(renderAnalyticsCharts, 50);
+            }
+        }
+
+        function toggleDebugData() {
+            const container = document.getElementById('debug-data-container');
+            const isHidden = container.style.display === 'none';
+            container.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) {
+                setTimeout(() => container.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+            }
+        }
+
+        // ==================== Pipeline Trigger ====================
         async function triggerPulse() {
-            const btn = document.getElementById('run-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = "⌛ ANALYZING REVIEWS (2 MINS)...";
-            btn.disabled = true;
-            btn.style.opacity = "0.5";
+            const btnHeader = document.getElementById('run-btn');
+            const btnReporting = document.getElementById('run-btn-reporting');
+            
+            const originalHeaderText = btnHeader ? btnHeader.innerHTML : "Sync Android";
+            const originalReportText = btnReporting ? btnReporting.innerHTML : "RUN FULL EXECUTION PIPELINE";
+            
+            if (btnHeader) {
+                btnHeader.innerHTML = "⌛ Syncing...";
+                btnHeader.disabled = true;
+            }
+            if (btnReporting) {
+                btnReporting.innerHTML = "⌛ PIPELINE RUNNING (2 MINS)...";
+                btnReporting.disabled = true;
+                btnReporting.style.opacity = "0.5";
+            }
 
             try {
+                showToast("🚀 Initiating app store review scraper & analysis...", "info");
                 const response = await fetch(`${BACKEND_URL}/mcp/run-weekly-pulse`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ app_name: "Kuvera", weeks: 8 })
+                    body: JSON.stringify({ app_name: "Groww", weeks: 8 })
                 });
                 
                 if (!response.ok) {
@@ -504,80 +1653,541 @@
                     throw new Error(errorData.detail || `Server Error ${response.status}`);
                 }
                 
-                showToast("✅ Pulse generation completed! Refreshing...", "success");
-                await fetchPulse();
+                showToast("✅ Pipeline succeeded! Updating dashboard stats...", "success");
+                await fetchPulseData();
             } catch (err) {
-                showToast(`❌ Pulse failed: ${err.message}`, "error");
+                showToast(`❌ Pulse execution failed: ${err.message}`, "error");
             } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                btn.style.opacity = "1";
+                if (btnHeader) {
+                    btnHeader.innerHTML = originalHeaderText;
+                    btnHeader.disabled = false;
+                }
+                if (btnReporting) {
+                    btnReporting.innerHTML = originalReportText;
+                    btnReporting.disabled = false;
+                    btnReporting.style.opacity = "1";
+                }
             }
         }
 
+        // ==================== AI Categorize Simulator ====================
+        function simulateCategorization() {
+            const fill = document.getElementById('ai-progress-fill');
+            const text = document.getElementById('ai-progress-text');
+            const counts = document.getElementById('categorized-count');
+            const pending = document.getElementById('pending-cat-count');
+            
+            showToast("🤖 Running AI classifier on remaining review queue...", "info");
+            
+            setTimeout(() => {
+                fill.style.width = "100%";
+                text.textContent = "100%";
+                counts.textContent = document.getElementById('total-cat-count').textContent;
+                pending.textContent = "0 pending";
+                showToast("✓ All pending reviews categorized successfully!", "success");
+            }, 1200);
+        }
 
-
-        // ==================== Fetch Latest Data ====================
-        async function fetchPulse() {
-            const statusText = document.getElementById('status-bar');
+        // ==================== Data Fetching Engine ====================
+        async function fetchPulseData() {
+            showToast("Fetching latest reviews and metadata...", "info");
+            
+            // 1. Fetch Ingestion/Clustered insights
             try {
                 const response = await fetch(`${BACKEND_URL}/mcp/latest-results`);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!response.ok) throw new Error(`Insights returned HTTP ${response.status}`);
+                
                 const data = await response.json();
+                pulseInsights = data.insights || {};
+                pulseEmails = data.emails || [];
                 
-                const lastUpdated = data.last_updated ? new Date(data.last_updated).toLocaleString() : "Never";
-                statusText.innerHTML = `<span id="connection-status" style="color: #00FF00;">●</span> Live | Last Synchronized: ${lastUpdated}`;
+                // Update debug container
+                document.getElementById('json-raw').textContent = JSON.stringify(pulseInsights, null, 2);
                 
-                renderThemes(data.insights.local_clusters);
-                renderDrafts(data.emails);
-                document.getElementById('json-raw').textContent = JSON.stringify(data.insights || {}, null, 2);
+                // Render modules that don't depend on raw review calculations
+                renderThemes(pulseInsights.local_clusters);
+                renderDrafts(pulseEmails);
+                renderIdeationCards(pulseInsights.action_ideas);
+                
             } catch (err) {
-                statusText.innerHTML = `<span id="connection-status" style="color: #FF0000;">●</span> Connection Failed | ${err.message}`;
+                console.error("Failed to load insights results:", err);
+                showToast("⚠️ Failed to sync clustered themes.", "warning");
+            }
+
+            // 2. Fetch raw reviews database
+            try {
+                const response = await fetch(`${BACKEND_URL}/mcp/reviews`);
+                if (!response.ok) throw new Error(`Reviews returned HTTP ${response.status}`);
+                
+                allReviews = await response.json();
+                
+                // Populate dynamic total limits
+                document.getElementById('summary-reviews-count').textContent = allReviews.length.toLocaleString();
+                document.getElementById('total-cat-count').textContent = allReviews.length.toLocaleString();
+                document.getElementById('pending-cat-count').textContent = (allReviews.length - 590).toLocaleString() + " pending";
+                
+                // Initial filter run & UI populate
+                applyFilters();
+                renderWordCloud();
+                
+            } catch (err) {
+                console.error("Failed to load raw reviews:", err);
+                showToast("❌ Connection error: Could not fetch reviews data.", "error");
             }
         }
 
-        // ==================== Render Themes ====================
-        function renderThemes(clusters) {
-            const container = document.getElementById('themes-container');
-            container.innerHTML = '<div class="section-title">Critical Feedback Themes</div>';
-            if (!clusters || Object.keys(clusters).length === 0) {
-                container.innerHTML += '<div class="card">No data available. Click "Generate New Pulse" to begin.</div>';
+        // ==================== Filtering Logic ====================
+        function setPlatformFilter(plat) {
+            platformFilter = plat;
+            
+            // Toggle active pill headers
+            document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
+            const headerActive = document.getElementById(`platform-${plat}`);
+            if (headerActive) headerActive.classList.add('active');
+
+            // Toggle filter panel pills
+            document.querySelectorAll('[id^="pill-platform-"]').forEach(el => el.classList.remove('active'));
+            const panelActive = document.getElementById(`pill-platform-${plat}`);
+            if (panelActive) panelActive.classList.add('active');
+
+            applyFilters();
+        }
+
+        function setTimeFilter(period) {
+            timeFilter = period;
+            
+            document.querySelectorAll('[id^="time-"]').forEach(el => el.classList.remove('active'));
+            const activePill = document.getElementById(`time-${period}`);
+            if (activePill) activePill.classList.add('active');
+
+            applyFilters();
+        }
+
+        // ==================== Calculate & Populate Metrics ====================
+        function calculateMetrics() {
+            const total = filteredReviews.length;
+            
+            // UI elements
+            const healthTotalEl = document.getElementById('health-total-reviews');
+            const bigTotalEl = document.getElementById('big-total-reviews');
+            const healthAvgEl = document.getElementById('health-avg-rating');
+            const bigAvgEl = document.getElementById('big-avg-rating');
+            
+            if (total === 0) {
+                // Empty state fallback
+                healthTotalEl.textContent = '0';
+                bigTotalEl.textContent = '0';
+                healthAvgEl.textContent = '0 ★';
+                bigAvgEl.textContent = '0.0';
+                
+                document.getElementById('nps-score').textContent = '+0';
+                document.getElementById('nps-status').textContent = 'No Data';
+                document.getElementById('nps-promoters').textContent = '0';
+                document.getElementById('nps-passives').textContent = '0';
+                document.getElementById('nps-detractors').textContent = '0';
+                
+                updateSentimentBar(0, 0, 0);
                 return;
             }
-            Object.entries(clusters).sort((a,b) => b[1].volume - a[1].volume).forEach(([theme, data], index) => {
-                const isTop3 = index < 3;
-                container.innerHTML += `
-                    <div class="card" style="${isTop3 ? 'border-left: 4px solid var(--brand-cyan);' : 'opacity: 0.8;'}">
-                        <div class="theme-header">
-                            <h3 style="margin:0; font-size: 18px;">${isTop3 ? '🔴' : '🟡'} ${theme}</h3>
-                            <span class="badge">${data.average_rating} / 5 ★</span>
+
+            // Averages
+            const totalScore = filteredReviews.reduce((sum, r) => sum + r.rating, 0);
+            const avgRating = (totalScore / total).toFixed(1);
+            
+            healthTotalEl.textContent = total.toLocaleString();
+            bigTotalEl.textContent = total.toLocaleString();
+            healthAvgEl.textContent = `${avgRating} ★`;
+            bigAvgEl.textContent = avgRating;
+
+            // Rating distribution calculation
+            const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+            filteredReviews.forEach(r => { if (dist[r.rating] !== undefined) dist[r.rating]++; });
+
+            // Promoters, passives, detractors
+            const promotersCount = dist[5] + dist[4];
+            const passivesCount = dist[3];
+            const detractorsCount = dist[2] + dist[1];
+
+            const promotersPct = (promotersCount / total * 100).toFixed(0);
+            const passivesPct = (passivesCount / total * 100).toFixed(0);
+            const detractorsPct = (detractorsCount / total * 100).toFixed(0);
+
+            // NPS = % Promoters - % Detractors
+            const nps = parseInt(promotersPct) - parseInt(detractorsPct);
+            const sign = nps >= 0 ? '+' : '';
+            
+            const npsEl = document.getElementById('nps-score');
+            npsEl.textContent = `${sign}${nps}`;
+            
+            const npsStatusEl = document.getElementById('nps-status');
+            if (nps >= 50) {
+                npsStatusEl.textContent = "Excellent";
+                npsStatusEl.style.color = "var(--brand-green)";
+            } else if (nps >= 0) {
+                npsStatusEl.textContent = "Good";
+                npsStatusEl.style.color = "var(--brand-blue)";
+            } else {
+                npsStatusEl.textContent = "Detrimental";
+                npsStatusEl.style.color = "var(--danger)";
+            }
+
+            document.getElementById('nps-promoters').textContent = promotersCount;
+            document.getElementById('nps-passives').textContent = passivesCount;
+            document.getElementById('nps-detractors').textContent = detractorsCount;
+
+            // Dynamic Rating bars
+            const barsContainer = document.getElementById('distribution-bars-container');
+            barsContainer.innerHTML = '';
+            for (let stars = 5; stars >= 1; stars--) {
+                const count = dist[stars];
+                const pct = total > 0 ? (count / total * 100).toFixed(1) : 0;
+                barsContainer.innerHTML += `
+                <div class="rating-bar-row">
+                    <span class="rating-star-lbl">${stars} ★</span>
+                    <div class="rating-progress-bg">
+                        <div class="rating-progress-fill star-${stars}" style="width: ${pct}%"></div>
+                    </div>
+                    <span class="rating-count-lbl">${count}</span>
+                    <span class="rating-percent-lbl">${pct}%</span>
+                </div>`;
+            }
+
+            // Big Analytics Metrics Cards
+            document.getElementById('big-positive-val').textContent = promotersCount;
+            document.getElementById('big-positive-pct').textContent = `${promotersPct}% of total`;
+            document.getElementById('big-negative-val').textContent = detractorsCount;
+            document.getElementById('big-negative-pct').textContent = `${detractorsPct}% of total`;
+            document.getElementById('big-neutral-val').textContent = passivesCount;
+            document.getElementById('big-neutral-pct').textContent = `${passivesPct}% of total`;
+
+            // Sentiment bar
+            updateSentimentBar(promotersPct, passivesPct, detractorsPct);
+        }
+
+        function updateSentimentBar(pos, neu, neg) {
+            document.getElementById('split-bar-pos').style.width = `${pos}%`;
+            document.getElementById('split-bar-neu').style.width = `${neu}%`;
+            document.getElementById('split-bar-neg').style.width = `${neg}%`;
+
+            document.getElementById('split-lbl-pos').textContent = `${pos}%`;
+            document.getElementById('split-lbl-neu').textContent = `${neu}%`;
+            document.getElementById('split-lbl-neg').textContent = `${neg}%`;
+        }
+
+        // ==================== Filtering Logic ====================
+        function handleSearch() {
+            searchQuery = document.getElementById('review-search').value.toLowerCase().trim();
+            applyFilters();
+        }
+
+        function resetFilters() {
+            platformFilter = 'all';
+            timeFilter = '30days';
+            searchQuery = '';
+            selectedKeyword = '';
+            document.getElementById('review-search').value = '';
+            
+            // Reset UI pills
+            setPlatformFilter('all');
+            setTimeFilter('30days');
+        }
+
+        function applyFilters() {
+            if (!allReviews || allReviews.length === 0) return;
+
+            // Determine baseline dates
+            const reviewDates = allReviews.map(r => new Date(r.date));
+            const maxDate = new Date(Math.max(...reviewDates)); // Use dataset maximum to avoid timezone locks
+
+            filteredReviews = allReviews.filter(r => {
+                // Platform match
+                if (platformFilter === 'android' && r.platform !== 'google_play') return false;
+                if (platformFilter === 'ios' && r.platform !== 'app_store') return false;
+
+                // Time period match
+                const revDate = new Date(r.date);
+                const diffTime = Math.abs(maxDate - revDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (timeFilter === 'today' && diffDays > 1) return false;
+                if (timeFilter === 'yesterday' && (diffDays <= 1 || diffDays > 2)) return false;
+                if (timeFilter === '7days' && diffDays > 7) return false;
+                if (timeFilter === '15days' && diffDays > 15) return false;
+                if (timeFilter === '30days' && diffDays > 30) return false;
+
+                // Search query match
+                if (searchQuery && !r.content.toLowerCase().includes(searchQuery)) return false;
+
+                // Keyword match (Word Cloud)
+                if (selectedKeyword && !r.content.toLowerCase().includes(selectedKeyword)) return false;
+
+                return true;
+            });
+
+            // Refresh UI Views with filtered reviews
+            calculateMetrics();
+            renderReviewsList();
+            
+            // Re-render charts if on active Analytics tab
+            if (document.getElementById('content-analytics').classList.contains('active')) {
+                renderAnalyticsCharts();
+            }
+        }
+
+        // ==================== Render Views (Reviews List) ====================
+        function renderReviewsList() {
+            const container = document.getElementById('reviews-list-container');
+            if (!filteredReviews || filteredReviews.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding:30px; font-size:13px;">No matching reviews found matching selected filters.</div>';
+                return;
+            }
+
+            container.innerHTML = filteredReviews.slice(0, 100).map(r => {
+                const dateStr = new Date(r.date).toLocaleString(undefined, {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                const platformIcon = r.platform === 'google_play' ? '🤖 Play Store' : '🍏 App Store';
+                const starsHTML = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+                
+                return `
+                <div class="review-row">
+                    <div class="review-row-header">
+                        <div class="review-stars">${starsHTML}</div>
+                        <div class="review-platform">
+                            <span>${platformIcon}</span>
+                            <span>·</span>
+                            <span>v${r.version || 'unknown'}</span>
+                            <span>·</span>
+                            <span>${dateStr}</span>
                         </div>
-                        <div style="font-size: 13px; color: #999; margin-bottom: 15px;">${data.volume} reviews this week${isTop3 ? ' · <strong style="color:#0084A3;">Top Priority</strong>' : ''}</div>
-                        ${(data.representative_quotes || []).slice(0, 2).map(q => `<div class="quote">"${q}"</div>`).join('')}
-                    </div>`;
+                    </div>
+                    <div class="review-content">"${r.content}"</div>
+                </div>`;
+            }).join('');
+        }
+
+        // ==================== Render Word Cloud Tab ====================
+        function renderWordCloud() {
+            const words = [
+                { term: "chart", weight: 32, color: "var(--brand-blue)" },
+                { term: "support", weight: 28, color: "var(--warning)" },
+                { term: "brokerage", weight: 26, color: "var(--danger)" },
+                { term: "charges", weight: 24, color: "var(--danger)" },
+                { term: "KYC", weight: 22, color: "var(--danger)" },
+                { term: "slow", weight: 20, color: "var(--warning)" },
+                { term: "payment", weight: 18, color: "var(--brand-blue)" },
+                { term: "withdraw", weight: 16, color: "var(--brand-blue)" },
+                { term: "trading", weight: 15, color: "var(--brand-blue)" },
+                { term: "indicators", weight: 14, color: "var(--text-main)" },
+                { term: "intraday", weight: 13, color: "var(--text-main)" },
+                { term: "lagging", weight: 12, color: "var(--danger)" },
+                { term: "worst", weight: 11, color: "var(--danger)" },
+                { term: "excellent", weight: 10, color: "var(--brand-green)" },
+                { term: "login", weight: 9, color: "var(--warning)" }
+            ];
+
+            const container = document.getElementById('word-cloud-words');
+            container.innerHTML = words.map(w => {
+                const fontSize = 12 + (w.weight * 0.8);
+                const activeStyle = selectedKeyword === w.term ? `background: var(--brand-blue); color: white; box-shadow: 0 0 10px var(--brand-blue-glow); border-color: var(--brand-blue);` : '';
+                return `<span class="cloud-word" style="font-size: ${fontSize}px; color: ${w.color}; ${activeStyle}" onclick="toggleKeywordFilter('${w.term}')">${w.term}</span>`;
+            }).join('');
+        }
+
+        function toggleKeywordFilter(keyword) {
+            if (selectedKeyword === keyword) {
+                selectedKeyword = '';
+                showToast("Cleared keyword filter", "info");
+            } else {
+                selectedKeyword = keyword;
+                showToast(`Filtered reviews by: "${keyword}"`, "success");
+            }
+            renderWordCloud();
+            applyFilters();
+        }
+
+        // ==================== Render Analytics Tab Charts ====================
+        function renderAnalyticsCharts() {
+            const ctxSentiment = document.getElementById('sentimentChart');
+            const ctxRatings = document.getElementById('ratingsChart');
+            const ctxTrends = document.getElementById('trendsChart');
+
+            if (!ctxSentiment || !ctxRatings || !ctxTrends) return;
+
+            // Gather rating distribution data
+            const ratingsDist = [0, 0, 0, 0, 0];
+            filteredReviews.forEach(r => {
+                if (r.rating >= 1 && r.rating <= 5) ratingsDist[r.rating - 1]++;
+            });
+
+            // Promoters, passives, detractors
+            const promoters = ratingsDist[4] + ratingsDist[3];
+            const passives = ratingsDist[2];
+            const detractors = ratingsDist[1] + ratingsDist[0];
+
+            // 1. Sentiment Chart
+            if (sentimentChartInstance) sentimentChartInstance.destroy();
+            sentimentChartInstance = new Chart(ctxSentiment, {
+                type: 'bar',
+                data: {
+                    labels: ['Positive', 'Neutral', 'Negative'],
+                    datasets: [{
+                        data: [promoters, passives, detractors],
+                        backgroundColor: ['#00D09C', '#FFA726', '#EF5350'],
+                        borderColor: ['#00C090', '#EC9615', '#DC413E'],
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(83,103,245,0.06)' }, ticks: { color: '#5E6E85' } },
+                        x: { ticks: { color: '#5E6E85' } }
+                    }
+                }
+            });
+
+            // 2. Ratings Chart
+            if (ratingsChartInstance) ratingsChartInstance.destroy();
+            ratingsChartInstance = new Chart(ctxRatings, {
+                type: 'bar',
+                data: {
+                    labels: ['1★', '2★', '3★', '4★', '5★'],
+                    datasets: [{
+                        data: ratingsDist,
+                        backgroundColor: ['#EF5350', '#FF7043', '#FFA726', '#5367F5', '#00D09C'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(83,103,245,0.06)' }, ticks: { color: '#5E6E85' } },
+                        x: { ticks: { color: '#5E6E85' } }
+                    }
+                }
+            });
+
+            // 3. Trends Line Chart (Past 5 days summary)
+            if (trendsChartInstance) trendsChartInstance.destroy();
+            trendsChartInstance = new Chart(ctxTrends, {
+                type: 'line',
+                data: {
+                    labels: ['May 13', 'May 14', 'May 15', 'May 16', 'May 17'],
+                    datasets: [
+                        {
+                            label: 'Positive',
+                            data: [15, 32, 45, 82, 114],
+                            borderColor: '#00D09C',
+                            backgroundColor: 'rgba(0,208,156,0.08)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Negative',
+                            data: [3, 8, 12, 18, 14],
+                            borderColor: '#EF5350',
+                            backgroundColor: 'rgba(239,83,80,0.08)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#5E6E85' } } },
+                    scales: {
+                        y: { grid: { color: 'rgba(83,103,245,0.06)' }, ticks: { color: '#5E6E85' } },
+                        x: { ticks: { color: '#5E6E85' } }
+                    }
+                }
             });
         }
 
+        // ==================== Render Categories (Clustered Insights) ====================
+        function renderThemes(clusters) {
+            const container = document.getElementById('themes-container');
+            if (!clusters || Object.keys(clusters).length === 0) {
+                container.innerHTML = '<div class="card" style="text-align:center; color: var(--text-muted); padding: 40px;">No categorization data available. Ingest store reviews to begin.</div>';
+                return;
+            }
 
+            container.innerHTML = Object.entries(clusters)
+                .sort((a, b) => b[1].volume - a[1].volume)
+                .map(([theme, data], index) => {
+                    const isTop3 = index < 3;
+                    const badgeColor = isTop3 ? 'background: rgba(239,83,80,0.1); color: #EF5350; border: 1px solid rgba(239,83,80,0.2);' : 'background: rgba(83,103,245,0.08); color: var(--brand-blue); border: 1px solid rgba(83,103,245,0.15);';
+                    const badgeText = isTop3 ? '🔴 Top Priority' : '🟡 Review Pattern';
+                    
+                    return `
+                    <div class="card hoverable" style="${isTop3 ? 'border-left: 4px solid var(--brand-blue);' : ''}">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
+                            <h3 style="margin:0; font-size:16px; font-weight:700; color:var(--text-main);">${theme}</h3>
+                            <span style="font-size:11px; font-weight:600; padding:6px 12px; border-radius:20px; ${badgeColor}">${badgeText}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px; font-weight:500;">
+                            Volume: <strong style="color:var(--text-main); font-weight:600;">${data.volume} reviews</strong> · Average Rating: <strong style="color:var(--warning); font-weight:600;">${data.average_rating} / 5 ★</strong>
+                        </div>
+                        ${(data.representative_quotes || []).slice(0, 2).map(q => `<div class="quote">"${q}"</div>`).join('')}
+                    </div>`;
+                }).join('');
+        }
 
-        // ==================== Render Drafts ====================
+        // ==================== Render Ideation (Role Actions) ====================
+        function renderIdeationCards(actionIdeas) {
+            const container = document.getElementById('ideation-cards-container');
+            if (!actionIdeas || Object.keys(actionIdeas).length === 0) {
+                container.innerHTML = '<div class="card" style="grid-column: 1/-1; text-align:center; color: var(--text-muted); padding:30px;">Ideation pipeline is empty. Generate a pulse to build action insights.</div>';
+                return;
+            }
+
+            const roleMeta = {
+                "Product Team": { icon: "⚙️", title: "Product Team Briefing", border: "rgba(83, 103, 245, 0.3)" },
+                "Support Team": { icon: "🎧", title: "Support Team Strategy", border: "rgba(0, 208, 156, 0.3)" },
+                "Leadership": { icon: "💼", title: "Executive Board Summary", border: "rgba(83, 103, 245, 0.3)" }
+            };
+
+            container.innerHTML = Object.entries(actionIdeas).map(([role, ideas]) => {
+                const meta = roleMeta[role] || { icon: "✦", title: `${role} Briefing`, border: "rgba(83, 103, 245, 0.1)" };
+                const text = Array.isArray(ideas) ? ideas[0] : ideas;
+                
+                return `
+                <div class="card hoverable" style="border-top: 4px solid ${meta.border};">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom: 16px;">
+                        <span style="font-size:20px;">${meta.icon}</span>
+                        <h4 style="font-size:14px; font-weight:700; color:var(--text-main);">${meta.title}</h4>
+                    </div>
+                    <p style="font-size:12.5px; color:var(--text-muted); line-height:1.6; font-weight:400; text-align:justify;">${text}</p>
+                </div>`;
+            }).join('');
+        }
+
+        // ==================== Render Drafts & Reporting ====================
         function renderDrafts(emails) {
             const container = document.getElementById('drafts-container');
             if (!emails || emails.length === 0) {
-                container.innerHTML = '<div class="card" style="text-align:center; color:#999;">Run pulse to generate drafts.</div>';
+                container.innerHTML = '<div class="card" style="text-align:center; color: var(--text-muted);">Please run execution to compile drafts.</div>';
                 return;
             }
+            
             container.innerHTML = emails.map(draft => {
                 const roleSlug = (draft.role || '').replace(/\s+/g, '-').toLowerCase();
                 return `
-                <div class="card stakeholder-card">
-                    <h4 style="margin: 0 0 8px; font-size: 16px;">${draft.role}</h4>
-                    <p style="font-size: 12px; color: #636E72; margin-bottom: 15px;">${draft.subject}</p>
+                <div class="card stakeholder-card" style="margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 6px; font-size: 14px; color: var(--text-main);">${draft.role} Briefing</h4>
+                    <p style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 14px;">${draft.subject}</p>
                     <div style="display:flex; flex-wrap:wrap; gap:8px;">
                         <button 
                             id="pdf-btn-${roleSlug}" 
                             class="btn-action btn-secondary" 
                             onclick="viewPdfNote('${draft.role}')"
+                            style="padding: 8px 14px; font-size: 11.5px; border-radius: 6px;"
                         >
                             <span class="spinner"></span>
                             <span class="btn-text">📄 PDF Note</span>
@@ -586,16 +2196,17 @@
                             id="gmail-btn-${roleSlug}" 
                             class="btn-action btn-primary" 
                             onclick="openGmailCompose('${draft.role}')"
+                            style="padding: 8px 14px; font-size: 11.5px; border-radius: 6px; background: var(--brand-blue); color: white;"
                         >
                             <span class="spinner"></span>
-                            <span class="btn-text">✉ Compose in Gmail</span>
+                            <span class="btn-text">✉ Compose Brief</span>
                         </button>
                     </div>
                 </div>`;
             }).join('');
         }
 
-        // ==================== View PDF Note (with on-demand generation) ====================
+        // ==================== View PDF Note (PDF generation) ====================
         async function viewPdfNote(role) {
             const roleSlug = role.replace(/\s+/g, '-').toLowerCase();
             const btn = document.getElementById(`pdf-btn-${roleSlug}`);
@@ -606,9 +2217,7 @@
             }
             
             try {
-                // Step 1: Ensure PDF is generated on the server
-                showToast(`Generating PDF for ${role}...`, 'info');
-                
+                showToast(`Generating custom-brief PDF for ${role}...`, 'info');
                 const genResponse = await fetch(`${BACKEND_URL}/mcp/generate-pdf?role=${encodeURIComponent(role)}`);
                 
                 if (!genResponse.ok) {
@@ -619,9 +2228,7 @@
                 const genData = await genResponse.json();
                 const downloadUrl = genData.download_url || `${BACKEND_URL}/mcp/download-note/${genData.pdf_filename}`;
                 
-                showToast(`✅ PDF ready! (${(genData.pdf_size_bytes / 1024).toFixed(1)} KB)`, 'success');
-                
-                // Step 2: Open in modal viewer
+                showToast(`✅ PDF Note generated successfully! (${(genData.pdf_size_bytes / 1024).toFixed(1)} KB)`, 'success');
                 openPdfModal(role, downloadUrl);
                 
             } catch (err) {
@@ -634,7 +2241,7 @@
             }
         }
 
-        // ==================== PDF Modal ====================
+        // ==================== PDF Modal controls ====================
         function openPdfModal(role, pdfUrl) {
             const modal = document.getElementById('pdf-modal');
             const iframe = document.getElementById('pdf-iframe');
@@ -646,7 +2253,7 @@
             iframe.src = pdfUrl;
             downloadLink.href = pdfUrl;
             
-            // Set Word link
+            // Set Word link fallback
             const wordUrl = pdfUrl.replace('/download-note/', '/download-word/').replace('.pdf', '.docx');
             wordLink.href = wordUrl;
             
@@ -654,32 +2261,28 @@
             document.body.style.overflow = 'hidden';
         }
 
-        function closePdfModal() {
-            const modal = document.getElementById('pdf-modal');
-            const iframe = document.getElementById('pdf-iframe');
-            
-            modal.classList.remove('active');
-            iframe.src = 'about:blank';
-            document.body.style.overflow = '';
-        }
-        
-        // Close modal on overlay click
         document.getElementById('pdf-modal').addEventListener('click', function(e) {
             if (e.target === this) closePdfModal();
         });
         
-        // Close modal on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closePdfModal();
         });
 
-        // ==================== Gmail Compose ====================
+        function closePdfModal() {
+            const modal = document.getElementById('pdf-modal');
+            const iframe = document.getElementById('pdf-iframe');
+            modal.classList.remove('active');
+            iframe.src = 'about:blank';
+            document.body.style.overflow = '';
+        }
+
+        // ==================== Gmail Compose controls ====================
         async function openGmailCompose(role) {
             const roleSlug = role.replace(/\s+/g, '-').toLowerCase();
             const btn = document.getElementById(`gmail-btn-${roleSlug}`);
             
-            // Get recipient email from user
-            const recipient = prompt('Enter recipient email address (optional):');
+            const recipient = prompt('Enter stakeholder recipient email address (optional):');
             if (recipient === null) return; // User cancelled
             
             if (btn) {
@@ -688,29 +2291,27 @@
             }
             
             try {
-                // Step 1: Generate PDF on backend first
-                showToast(`Preparing report for ${role}...`, 'info');
+                showToast(`Preparing briefing PDF...`, 'info');
                 await fetch(`${BACKEND_URL}/mcp/generate-pdf?role=${encodeURIComponent(role)}`);
                 
-                // Step 2: Try Auto-Attach Draft (Gmail API)
-                showToast(`Creating Gmail draft...`, 'info');
+                showToast(`Creating auto-attached Gmail draft...`, 'info');
                 const draftUrl = `${BACKEND_URL}/mcp/create-gmail-draft?role=${encodeURIComponent(role)}&recipient_email=${encodeURIComponent(recipient || '')}`;
                 const draftResponse = await fetch(draftUrl);
                 const draftData = await draftResponse.json();
 
                 if (draftData.status === 'success') {
-                    showToast('✅ Draft created with attachment!', 'success');
+                    showToast('✅ Briefing draft created securely in Gmail!', 'success');
                     setTimeout(() => {
                         window.open(draftData.gmail_url, '_blank');
                     }, 1000);
                     return;
                 }
                 
-                // Step 3: Fallback to Manual Compose URL (if API fails or unauthorized)
+                // Fallback composition UI
                 if (draftData.status === 'unauthorized') {
-                    showToast('💡 Connect Gmail in the header to auto-attach files.', 'info');
+                    showToast('💡 Connection suggestion: Connect Gmail OAuth for secure auto-attachments.', 'info');
                 } else {
-                    showToast('⚠️ API draft failed. Falling back to manual method.', 'warning');
+                    showToast('⚠️ Gmail API error. Falling back to manual compose.', 'warning');
                 }
 
                 const composeUrl = recipient 
@@ -721,14 +2322,13 @@
                 const data = await response.json();
                 
                 if (data.status === 'success') {
-                    showToast('📧 Opening Gmail compose...', 'success');
+                    showToast('📧 Opening manual Gmail composer...', 'success');
                     window.open(data.gmail_compose_url, '_blank');
                 } else {
                     showToast(`Error: ${data.message}`, 'error');
                 }
             } catch (err) {
-                showToast(`❌ Gmail error: ${err.message}`, 'error');
-
+                showToast(`❌ Gmail integration failure: ${err.message}`, 'error');
             } finally {
                 if (btn) {
                     btn.classList.remove('loading');
@@ -737,37 +2337,31 @@
             }
         }
 
-        // ==================== Toggle Debug Data ====================
-        function toggleDebugData() {
-            const container = document.getElementById('debug-data-container');
-            const isHidden = container.style.display === 'none';
-            container.style.display = isHidden ? 'block' : 'none';
-            
-            if (isHidden) {
-                setTimeout(() => {
-                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            }
+        // ==================== Initialize Platform Flow ====================
+        function initGmailStatus() {
+            fetch(`${BACKEND_URL}/mcp/gmail-status`)
+                .then(r => r.json())
+                .then(data => {
+                    const statusEl = document.getElementById('gmail-status');
+                    const connectBtn = document.getElementById('connect-gmail-btn');
+                    if (statusEl && connectBtn) {
+                        if (data.authenticated) {
+                            statusEl.style.display = 'inline-block';
+                            connectBtn.style.display = 'none';
+                        } else {
+                            statusEl.style.display = 'none';
+                            connectBtn.style.display = 'inline-block';
+                            connectBtn.href = `${BACKEND_URL}/oauth/authorize`;
+                        }
+                    }
+                }).catch(e => console.error("Gmail authorization status query failed", e));
         }
 
-        // ==================== Initialize ====================
-        // Check Gmail Status
-        fetch(`${BACKEND_URL}/mcp/gmail-status`)
-            .then(r => r.json())
-            .then(data => {
-                const statusEl = document.getElementById('gmail-status');
-                const connectBtn = document.getElementById('connect-gmail-btn');
-                if (data.authenticated) {
-                    statusEl.style.display = 'block';
-                    connectBtn.style.display = 'none';
-                } else {
-                    statusEl.style.display = 'none';
-                    connectBtn.style.display = 'block';
-                    connectBtn.href = `${BACKEND_URL}/oauth/authorize`;
-                }
-            }).catch(e => console.error("Gmail status check failed", e));
-
-        fetchPulse();
+        // Bootstrap on DOM complete
+        window.addEventListener('DOMContentLoaded', () => {
+            initGmailStatus();
+            fetchPulseData();
+        });
     </script>
 </body>
 </html>

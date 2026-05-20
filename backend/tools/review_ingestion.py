@@ -12,10 +12,10 @@ logger = logging.getLogger("review_ingestion")
 # SpellChecker is deferred or unused to speed up cloud startup
 spell = None
 
-# Kuvera app identifiers (Updated after CRED acquisition rebrand)
-PLAY_STORE_APP_ID = "in.kuvera.app"  # Corrected from typo: in.kuvera.app
-APP_STORE_APP_NAME = "kuvera"
-APP_STORE_APP_ID = "1329701793"  # Correct ID from iTunes lookup
+# Groww app identifiers
+PLAY_STORE_APP_ID = "com.nextbillion.groww"  # Groww's Google Play Store app ID
+APP_STORE_APP_NAME = "groww-stocks-mutual-fund-ipo"
+APP_STORE_APP_ID = "1404871703"  # Groww's Apple App Store ID
 
 def is_valid_english_text(text: str) -> bool:
     """Filters for minimum content length."""
@@ -89,15 +89,15 @@ def fetch_app_store_reviews(cutoff_date: datetime.datetime, count: int = 1000) -
     """App Store scraper - Apple's API frequently rate-limits. Returns empty list gracefully."""
     logger.info("Fetching reviews from App Store...")
     try:
-        kuvera_app = AppStore(country='in', app_name=APP_STORE_APP_NAME, app_id=APP_STORE_APP_ID)
-        kuvera_app.review(how_many=min(count, 200))  # Keep request small to avoid rate-limit
+        groww_app = AppStore(country='in', app_name=APP_STORE_APP_NAME, app_id=APP_STORE_APP_ID)
+        groww_app.review(how_many=min(count, 200))  # Keep request small to avoid rate-limit
         
-        if not kuvera_app.reviews:
+        if not groww_app.reviews:
             logger.warning("App Store returned 0 reviews (likely rate-limited by Apple). Continuing with Play Store data only.")
             return []
         
         formatted = []
-        for r in kuvera_app.reviews:
+        for r in groww_app.reviews:
             formatted.append({
                 'id': str(r.get('id', hash(r['review']))),
                 'platform': 'app_store',
@@ -116,8 +116,8 @@ def run_ingestion_pipeline() -> List[Dict[str, Any]]:
     cutoff_date = datetime.datetime.now() - datetime.timedelta(weeks=REVIEW_WINDOW_WEEKS)
     logger.info(f"Starting ingestion. Cutoff date: {cutoff_date.date()}")
     
-    play_reviews = fetch_play_store_reviews(cutoff_date)
-    app_reviews = fetch_app_store_reviews(cutoff_date)
+    play_reviews = fetch_play_store_reviews(cutoff_date, count=1000)
+    app_reviews = fetch_app_store_reviews(cutoff_date, count=200)
     
     all_raw = play_reviews + app_reviews
     logger.info(f"Raw reviews fetched: {len(all_raw)}")

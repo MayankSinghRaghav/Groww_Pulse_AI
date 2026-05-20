@@ -32,3 +32,87 @@
 2026-04-25 23:44:56,501 - email_draft - INFO - Email drafting pipeline complete.
 2026-04-25 23:44:56,610 - report_html - WARNING - No real data found. Using high-confidence sample pulse for dashboard preview.
 2026-04-25 23:44:56,623 - report_html - INFO - Interactive Pulse Dashboard generated: data\outputs\Kuvera_dashboard_20260425.html
+2026-05-20 20:28:17,016 - review_ingestion - INFO - Starting ingestion. Cutoff date: 2026-03-25
+2026-05-20 20:28:17,017 - review_ingestion - INFO - Fetching reviews from Google Play...
+2026-05-20 20:28:18,662 - review_ingestion - INFO - Fetching reviews from App Store...
+2026-05-20 20:28:20,583 - Base - INFO - Initialised: AppStore('in', 'groww-stocks-mutual-fund-ipo', 1404871703)
+2026-05-20 20:28:20,584 - Base - INFO - Ready to fetch reviews from: https://apps.apple.com/in/app/groww-stocks-mutual-fund-ipo/id1404871703
+2026-05-20 20:28:21,907 - Base - ERROR - Something went wrong: Expecting value: line 1 column 1 (char 0)
+2026-05-20 20:28:21,908 - Base - INFO - [id:1404871703] Fetched 0 reviews (0 fetched in total)
+2026-05-20 20:28:21,909 - review_ingestion - WARNING - App Store returned 0 reviews (likely rate-limited by Apple). Continuing with Play Store data only.
+2026-05-20 20:28:21,909 - review_ingestion - INFO - Raw reviews fetched: 1000
+2026-05-20 20:28:21,909 - review_ingestion - INFO - Processing 1000 raw reviews...
+2026-05-20 20:28:21,912 - review_ingestion - INFO - Clean (English, Valid Spelling) reviews: 722
+2026-05-20 20:28:21,947 - review_ingestion - INFO - Saved processed reviews to C:\Users\mayan\Desktop\Projects\Groww_Pulse\backend\data\processed\clean_reviews_20260520.json
+2026-05-20 20:28:21,984 - theme_clustering - INFO - Starting pipeline for 722 reviews.
+2026-05-20 20:28:22,005 - theme_clustering - INFO - Local Pre-Clustering complete. 640 reviews require advanced LLM.
+2026-05-20 20:28:22,896 - theme_clustering - INFO - Sending batch 1 to LLM...
+2026-05-20 20:28:26,388 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:28:26,442 - theme_clustering - INFO - Sending batch 2 to LLM...
+2026-05-20 20:28:29,170 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:28:29,176 - theme_clustering - INFO - Sending batch 3 to LLM...
+2026-05-20 20:28:32,031 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:28:34,129 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:28:35,352 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:28:36,322 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:28:36,333 - theme_clustering - INFO - Saved insights to data\outputs\clustered_insights.json
+2026-05-20 20:28:36,334 - theme_clustering - INFO - Clustering pipeline complete.
+2026-05-20 20:28:36,334 - insight_generation - INFO - Starting insight generation phase.
+2026-05-20 20:28:36,391 - insight_generation - INFO - Weekly One-Page Note generated: data\outputs\Groww_weekly_pulse_20260520.md
+2026-05-20 20:28:36,493 - insight_generation - INFO - Report generated: data\outputs\Groww_weekly_pulse_20260520.pdf
+2026-05-20 20:28:36,494 - insight_generation - INFO - Insight generation pipeline complete.
+2026-05-20 20:28:36,494 - email_draft - INFO - Starting email drafting phase.
+2026-05-20 20:28:36,500 - pdf_note - INFO - Retrieved 1 actions for Product Team from dictionary.
+2026-05-20 20:28:36,500 - pdf_note - INFO - First action for Product Team: The Product Team should prioritize resolving the t...
+2026-05-20 20:28:36,570 - pdf_note - INFO - PDF note generated: data\outputs\Groww_Pulse_Product_Team_20260520.pdf
+2026-05-20 20:28:36,570 - pdf_note - INFO - Retrieved 1 actions for Support Team from dictionary.
+2026-05-20 20:28:36,571 - pdf_note - INFO - First action for Support Team: To address the pressing concerns of users, the Sup...
+2026-05-20 20:28:36,638 - pdf_note - INFO - PDF note generated: data\outputs\Groww_Pulse_Support_Team_20260520.pdf
+2026-05-20 20:28:36,638 - pdf_note - INFO - Retrieved 1 actions for Leadership from dictionary.
+2026-05-20 20:28:36,638 - pdf_note - INFO - First action for Leadership: To mitigate retention risk and drive strategic imp...
+2026-05-20 20:28:36,724 - pdf_note - INFO - PDF note generated: data\outputs\Groww_Pulse_Leadership_20260520.pdf
+2026-05-20 20:28:36,725 - email_draft - INFO - Generated 3 PDF notes.
+2026-05-20 20:28:36,727 - email_draft - INFO - Saved 3 email drafts to data\outputs\Groww_stakeholder_emails_20260520.json
+2026-05-20 20:28:36,727 - email_draft - INFO - Email drafting pipeline complete.
+2026-05-20 20:29:57,671 - review_ingestion - INFO - Starting ingestion. Cutoff date: 2026-03-25
+2026-05-20 20:29:57,672 - review_ingestion - INFO - Fetching reviews from Google Play...
+2026-05-20 20:30:00,183 - review_ingestion - INFO - Fetching reviews from App Store...
+2026-05-20 20:30:02,318 - Base - INFO - Initialised: AppStore('in', 'groww-stocks-mutual-fund-ipo', 1404871703)
+2026-05-20 20:30:02,318 - Base - INFO - Ready to fetch reviews from: https://apps.apple.com/in/app/groww-stocks-mutual-fund-ipo/id1404871703
+2026-05-20 20:30:03,502 - Base - ERROR - Something went wrong: Expecting value: line 1 column 1 (char 0)
+2026-05-20 20:30:03,502 - Base - INFO - [id:1404871703] Fetched 0 reviews (0 fetched in total)
+2026-05-20 20:30:03,503 - review_ingestion - WARNING - App Store returned 0 reviews (likely rate-limited by Apple). Continuing with Play Store data only.
+2026-05-20 20:30:03,503 - review_ingestion - INFO - Raw reviews fetched: 1000
+2026-05-20 20:30:03,503 - review_ingestion - INFO - Processing 1000 raw reviews...
+2026-05-20 20:30:03,505 - review_ingestion - INFO - Clean (English, Valid Spelling) reviews: 723
+2026-05-20 20:30:03,547 - review_ingestion - INFO - Saved processed reviews to C:\Users\mayan\Desktop\Projects\Groww_Pulse\backend\data\processed\clean_reviews_20260520.json
+2026-05-20 20:30:03,585 - theme_clustering - INFO - Starting pipeline for 723 reviews.
+2026-05-20 20:30:03,606 - theme_clustering - INFO - Local Pre-Clustering complete. 641 reviews require advanced LLM.
+2026-05-20 20:30:04,480 - theme_clustering - INFO - Sending batch 1 to LLM...
+2026-05-20 20:30:10,318 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:30:10,358 - theme_clustering - INFO - Sending batch 2 to LLM...
+2026-05-20 20:30:13,605 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:30:13,609 - theme_clustering - INFO - Sending batch 3 to LLM...
+2026-05-20 20:30:16,005 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:30:17,951 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:30:19,189 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:30:20,207 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-20 20:30:20,211 - theme_clustering - INFO - Saved insights to data\outputs\clustered_insights.json
+2026-05-20 20:30:20,212 - theme_clustering - INFO - Clustering pipeline complete.
+2026-05-20 20:30:20,213 - insight_generation - INFO - Starting insight generation phase.
+2026-05-20 20:30:20,265 - insight_generation - INFO - Weekly One-Page Note generated: data\outputs\Groww_weekly_pulse_20260520.md
+2026-05-20 20:30:20,382 - insight_generation - INFO - Report generated: data\outputs\Groww_weekly_pulse_20260520.pdf
+2026-05-20 20:30:20,382 - insight_generation - INFO - Insight generation pipeline complete.
+2026-05-20 20:30:20,382 - email_draft - INFO - Starting email drafting phase.
+2026-05-20 20:30:20,388 - pdf_note - INFO - Retrieved 1 actions for Product Team from dictionary.
+2026-05-20 20:30:20,388 - pdf_note - INFO - First action for Product Team: To address the most pressing concerns of Kuvera us...
+2026-05-20 20:30:20,452 - pdf_note - INFO - PDF note generated: data\outputs\Groww_Pulse_Product_Team_20260520.pdf
+2026-05-20 20:30:20,452 - pdf_note - INFO - Retrieved 1 actions for Support Team from dictionary.
+2026-05-20 20:30:20,453 - pdf_note - INFO - First action for Support Team: To address the pressing concerns of users, the Sup...
+2026-05-20 20:30:20,508 - pdf_note - INFO - PDF note generated: data\outputs\Groww_Pulse_Support_Team_20260520.pdf
+2026-05-20 20:30:20,509 - pdf_note - INFO - Retrieved 1 actions for Leadership from dictionary.
+2026-05-20 20:30:20,509 - pdf_note - INFO - First action for Leadership: To mitigate significant retention risk and enhance...
+2026-05-20 20:30:20,570 - pdf_note - INFO - PDF note generated: data\outputs\Groww_Pulse_Leadership_20260520.pdf
+2026-05-20 20:30:20,570 - email_draft - INFO - Generated 3 PDF notes.
+2026-05-20 20:30:20,572 - email_draft - INFO - Saved 3 email drafts to data\outputs\Groww_stakeholder_emails_20260520.json
+2026-05-20 20:30:20,572 - email_draft - INFO - Email drafting pipeline complete.

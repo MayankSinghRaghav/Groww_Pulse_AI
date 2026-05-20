@@ -1,4 +1,4 @@
-# Predefined theme taxonomy for Kuvera
+# Predefined theme taxonomy for Groww Pulsator
 THEME_TAXONOMY = {
     "Onboarding": [
         "signup", "login", "register", "start", "tutorial", "guide", "onboarding", "otp", "welcome"
@@ -13,7 +13,13 @@ THEME_TAXONOMY = {
         "statement", "cas", "report", "tax", "portfolio", "download", "summary", "gain", "loss", "history"
     ],
     "Withdrawals": [
-        "withdrawal", "redeem", "payout", "sell", "transfer", "bank account", "time", "delay", "credit"
+        "withdrawal", "redeem", "payout", "sell", "transfer", "bank account", "processing time", "delay", "credit"
+    ],
+    "Performance & Stability": [
+        "crash", "freeze", "slow", "lag", "bug", "error", "crashing", "performance", "stable", "stability"
+    ],
+    "Customer Support": [
+        "support", "customer care", "help", "agent", "chat", "email", "reply", "response", "ticket"
     ]
 }
 

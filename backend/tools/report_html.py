@@ -182,7 +182,7 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <header>
-        <div class="logo">KUVERA <span>PULSE</span></div>
+        <div class="logo">GROWW <span>PULSE</span></div>
         <div style="font-size: 14px; opacity: 0.6; font-weight: 300;">Insights Engine | {{ date }}</div>
     </header>
     
@@ -236,7 +236,7 @@ HTML_TEMPLATE = """
     </div>
     
     <footer>
-        PROPRIETARY REPORT BY KUVERA BY CRED
+        PROPRIETARY REPORT BY GROWW
     </footer>
 </body>
 </html>
@@ -295,7 +295,7 @@ if __name__ == "__main__":
     
     # Load Insights
     input_file = OUTPUT_DIR / "clustered_insights.json"
-    emails_file = OUTPUT_DIR / f"Kuvera_stakeholder_emails_{datetime.datetime.now().strftime('%Y%m%d')}.json"
+    emails_file = OUTPUT_DIR / f"Groww_stakeholder_emails_{datetime.datetime.now().strftime('%Y%m%d')}.json"
     
     if input_file.exists() and emails_file.exists():
         with open(input_file, 'r', encoding='utf-8') as f:

@@ -40,7 +40,7 @@ logger = logging.getLogger("mcp_server")
 
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Kuvera Weekly Pulse MCP Server", version="1.0.0")
+app = FastAPI(title="Groww Pulsator MCP Server", version="1.0.0")
 
 # Enable CORS for Vercel deployment
 app.add_middleware(
@@ -52,14 +52,14 @@ app.add_middleware(
 )
 
 class WeeklyPulseRequest(BaseModel):
-    app_name: str = "Kuvera"
+    app_name: str = "Groww"
     weeks: int = 8
     recipient_role: Optional[str] = None
 
 class SendEmailRequest(BaseModel):
     role: str  # "Product Team", "Support Team", "Leadership"
     recipient_email: str
-    sender_name: Optional[str] = "Kuvera Pulse AI Engine"
+    sender_name: Optional[str] = "Groww Pulse AI Engine"
 
 @app.get("/mcp/gmail-status")
 async def gmail_status():
@@ -71,7 +71,7 @@ async def gmail_status():
 # ==================== Results Endpoints ====================
 
 @app.get("/mcp/latest-results")
-async def get_latest_results():
+async def get_latest_results(request: Request):
     from config.settings import OUTPUT_DIR, APP_NAME
     import glob
     
@@ -102,12 +102,11 @@ async def get_latest_results():
                 with open(email_file, 'r', encoding='utf-8') as f:
                     emails_data = json.load(f)
                     if emails_data and len(emails_data) > 0:
-                        import os as _os
-                        backend_url = _os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+                        backend_url = str(request.base_url).rstrip('/')
                         today_str = datetime.datetime.now().strftime("%Y%m%d")
                         for draft in emails_data:
                             role = draft.get("role", "Leadership")
-                            pdf_fn = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+                            pdf_fn = f"{APP_NAME}_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
                             draft["download_link"] = f"{backend_url}/mcp/download-note/{pdf_fn}"
                             draft["pdf_filename"] = pdf_fn
                         results["emails"] = emails_data
@@ -150,16 +149,20 @@ async def oauth_authorize():
 
 @app.get("/oauth/callback")
 async def oauth_callback(request: Request, code: str = None, state: str = None, error: str = None):
+    # Gmail API requires exact redirect URI match
+    referer = request.headers.get("referer")
+    if referer:
+        frontend_url = referer.split('?')[0].rstrip('/')
+    else:
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3001")
+        
     if error:
-        return RedirectResponse(f"{os.getenv('FRONTEND_URL', 'https://kuvera-pulse.vercel.app')}?auth=error&msg={error}")
+        return RedirectResponse(f"{frontend_url}?auth=error&msg={error}")
     
     try:
         from tools.gmail_oauth import handle_oauth_callback
-        # Gmail API requires exact redirect URI match
         authorization_response = str(request.url)
         handle_oauth_callback(authorization_response, state)
-        
-        frontend_url = os.getenv("FRONTEND_URL", "https://kuvera-pulse.vercel.app")
         return RedirectResponse(f"{frontend_url}?auth=success")
     except Exception as e:
         logger.error(f"OAuth callback error: {e}")
@@ -196,7 +199,7 @@ async def oauth_logout():
 # ==================== Gmail Draft Integration ====================
 
 @app.get("/mcp/create-gmail-draft")
-async def create_gmail_draft(role: str, recipient_email: str = ""):
+async def create_gmail_draft(role: str, recipient_email: str = "", request: Request = None):
     """Creates a Gmail draft with the PDF attached via Gmail API (OAuth)"""
     try:
         from tools.gmail_oauth import create_draft_via_oauth
@@ -206,15 +209,18 @@ async def create_gmail_draft(role: str, recipient_email: str = ""):
         _ensure_pdf_exists(role)
         
         today_str = datetime.datetime.now().strftime("%Y%m%d")
-        pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+        pdf_filename = f"Groww_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
         pdf_path = OUTPUT_DIR / pdf_filename
         
-        backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+        if request:
+            backend_url = str(request.base_url).rstrip('/')
+        else:
+            backend_url = os.getenv("BACKEND_URL", "https://groww-pulsator.onrender.com")
         compose_data = generate_gmail_compose_url(role, recipient_email, backend_url)
         
         result = create_draft_via_oauth(
             to=recipient_email,
-            subject=compose_data['su'],
+            subject=compose_data['subject'],
             body_text=compose_data['body'],
             pdf_path=str(pdf_path)
         )
@@ -240,12 +246,15 @@ async def create_gmail_draft(role: str, recipient_email: str = ""):
 async def gmail_compose_endpoint(role: str, recipient_email: str = "", request: Request = None):
     """Legacy compose URL method (for manual attachment)"""
     from tools.gmail_compose import generate_gmail_compose_url
-    backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+    if request:
+        backend_url = str(request.base_url).rstrip('/')
+    else:
+        backend_url = os.getenv("BACKEND_URL", "https://groww-pulsator.onrender.com")
     _ensure_pdf_exists(role)
     return generate_gmail_compose_url(role, recipient_email, backend_url)
 
 @app.get("/mcp/generate-pdf")
-async def generate_pdf_endpoint(role: str = "Product Team"):
+async def generate_pdf_endpoint(role: str = "Product Team", request: Request = None):
     from config.settings import OUTPUT_DIR
     import os
     
@@ -256,8 +265,11 @@ async def generate_pdf_endpoint(role: str = "Product Team"):
     success = _ensure_pdf_exists(role)
     
     today_str = datetime.datetime.now().strftime("%Y%m%d")
-    pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
-    backend_url = os.getenv("BACKEND_URL", "https://kuvera-pulse.onrender.com")
+    pdf_filename = f"Groww_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+    if request:
+        backend_url = str(request.base_url).rstrip('/')
+    else:
+        backend_url = os.getenv("BACKEND_URL", "https://groww-pulsator.onrender.com")
     
     if success:
         file_path = OUTPUT_DIR / pdf_filename
@@ -276,7 +288,7 @@ async def generate_pdf_endpoint(role: str = "Product Team"):
 def _ensure_pdf_exists(role: str) -> bool:
     from config.settings import OUTPUT_DIR
     today_str = datetime.datetime.now().strftime("%Y%m%d")
-    pdf_filename = f"Kuvera_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
+    pdf_filename = f"Groww_Pulse_{role.replace(' ', '_')}_{today_str}.pdf"
     file_path = OUTPUT_DIR / pdf_filename
     
     if file_path.exists() and file_path.stat().st_size > 2048:
@@ -344,6 +356,25 @@ async def download_word(filename: str):
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(path=str(file_path), filename=filename)
+
+@app.get("/mcp/reviews")
+async def get_reviews():
+    from config.settings import OUTPUT_DIR
+    import glob
+    processed_dir = OUTPUT_DIR.parent / "processed"
+    review_files = sorted(
+        glob.glob(str(processed_dir / "clean_reviews_*.json")),
+        key=lambda f: os.path.getmtime(f),
+        reverse=True
+    )
+    if not review_files:
+        return []
+    try:
+        with open(review_files[0], 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Failed to load reviews: {e}")
+        return []
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
