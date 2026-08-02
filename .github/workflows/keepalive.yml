@@ -1,0 +1,15 @@
+name: Keep Render Awake
+
+# Render free tier sleeps after ~15 min idle, causing a slow cold start on the
+# next visit. Ping /health every 10 min so the backend stays warm.
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # every 10 min (GitHub may delay a few min under load)
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health
+        run: curl -fsS --max-time 90 https://groww-pulse-ai.onrender.com/health
