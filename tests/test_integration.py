@@ -54,3 +54,20 @@ def test_unclassified_logic():
     clustered, unclassified = hard_keyword_pre_cluster(mixed_reviews)
     assert len(unclassified) == 1
     assert unclassified[0]["id"] == "99"
+
+
+def test_demo_mode_off_fails_loud(monkeypatch):
+    """Empty scrape must raise (not silently return fake data) when DEMO_MODE is off."""
+    from tools import theme_clustering as tc
+    monkeypatch.setattr(tc, "DEMO_MODE", False)
+    with pytest.raises(RuntimeError):
+        tc._fallback_or_fail("0 reviews found after scraping.", {"local_clusters": {}})
+
+
+def test_demo_mode_on_returns_fallback(monkeypatch):
+    """With DEMO_MODE on, the canned fallback is returned instead of raising."""
+    from tools import theme_clustering as tc
+    monkeypatch.setattr(tc, "DEMO_MODE", True)
+    monkeypatch.setattr(tc, "_save_and_return", lambda data: None)
+    fallback = {"local_clusters": {"demo": 1}}
+    assert tc._fallback_or_fail("0 reviews found after scraping.", fallback) is fallback

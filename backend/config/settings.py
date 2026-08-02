@@ -44,3 +44,8 @@ for directory in [RAW_REVIEWS_DIR, PROCESSED_DATA_DIR, OUTPUT_DIR, LOG_DIR]:
 # Analysis Settings
 REVIEW_WINDOW_WEEKS = 8
 TARGET_REVIEW_COUNT = 1000
+
+# When true, ship canned demo insights if a scrape yields no reviews (offline demos).
+# Default false: an empty/failed scrape raises so the run fails visibly instead of
+# silently serving fake data as if it were fresh.
+DEMO_MODE = os.getenv("DEMO_MODE", "false").strip().lower() in ("1", "true", "yes", "on")

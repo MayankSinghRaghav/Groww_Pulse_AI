@@ -3,7 +3,7 @@ import logging
 from typing import List, Dict, Any
 import os
 from config.theme_taxonomy import THEME_TAXONOMY
-from config.settings import PROCESSED_DATA_DIR, OUTPUT_DIR, MODEL_NAME
+from config.settings import PROCESSED_DATA_DIR, OUTPUT_DIR, MODEL_NAME, DEMO_MODE
 from groq import Groq
 from config.prompts import SYSTEM_PROMPT_CLUSTERING
 
@@ -211,24 +211,20 @@ def run_clustering_pipeline(app_name: str = "Kuvera") -> Dict[str, Any]:
         }
     }
 
+    files = list(PROCESSED_DATA_DIR.glob("clean_reviews_*.json"))
+    if not files:
+        return _fallback_or_fail("No clean review files found.", FALLBACK_DATA)
+
     try:
-        files = list(PROCESSED_DATA_DIR.glob("clean_reviews_*.json"))
-        if not files:
-            logger.warning("No clean review files found. Using fallback demonstration data.")
-            _save_and_return(FALLBACK_DATA)
-            return FALLBACK_DATA
         latest_file = max(files, key=os.path.getctime)
         with open(latest_file, 'r', encoding='utf-8') as f:
             clean_reviews = json.load(f)
     except Exception as e:
         logger.error(f"Error loading clean reviews: {e}")
-        _save_and_return(FALLBACK_DATA)
-        return FALLBACK_DATA
+        return _fallback_or_fail(f"Could not read latest review file: {e}", FALLBACK_DATA)
 
     if not clean_reviews:
-        logger.warning("0 reviews found after scraping. Using fallback demonstration data.")
-        _save_and_return(FALLBACK_DATA)
-        return FALLBACK_DATA
+        return _fallback_or_fail("0 reviews found after scraping.", FALLBACK_DATA)
 
     logger.info(f"Starting pipeline for {len(clean_reviews)} reviews.")
     clustered, unclassified = hard_keyword_pre_cluster(clean_reviews)
@@ -257,6 +253,16 @@ def _save_and_return(data: Dict[str, Any]):
         logger.info(f"Saved insights to {output_file}")
     except Exception as e:
         logger.error(f"Failed to save insights: {e}")
+
+
+def _fallback_or_fail(reason: str, fallback: Dict[str, Any]) -> Dict[str, Any]:
+    """Empty/failed scrape: serve canned demo data only in DEMO_MODE, otherwise raise
+    so the pipeline goes red instead of silently shipping fake insights as fresh."""
+    if DEMO_MODE:
+        logger.warning(f"{reason} DEMO_MODE on -> using demonstration data.")
+        _save_and_return(fallback)
+        return fallback
+    raise RuntimeError(f"Clustering aborted: {reason} Set DEMO_MODE=true to allow demo fallback.")
 
 
 if __name__ == "__main__":
