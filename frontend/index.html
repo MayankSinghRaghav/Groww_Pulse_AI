@@ -1829,6 +1829,30 @@
             setTimeout(() => toast.remove(), 4000);
         }
 
+        // Render's free tier sleeps after ~15 min idle; the first request then
+        // takes 30-60s (or briefly returns 502/503) while it wakes. Without this,
+        // that cold start surfaces as "Failed to fetch". Retry with a per-attempt
+        // timeout so a nap looks like a short wait, not an error.
+        async function fetchWithWake(url, opts = {}, { attempts = 4, timeoutMs = 30000 } = {}) {
+            let lastErr;
+            for (let i = 0; i < attempts; i++) {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+                try {
+                    const res = await fetch(url, { ...opts, signal: ctrl.signal });
+                    clearTimeout(timer);
+                    if ([502, 503, 504].includes(res.status)) throw new Error(`server waking (HTTP ${res.status})`);
+                    return res;
+                } catch (err) {
+                    clearTimeout(timer);
+                    lastErr = err;
+                    if (i === 0) showToast("⏳ Waking the backend (free tier) — this can take up to a minute…", "info");
+                    if (i < attempts - 1) await new Promise(r => setTimeout(r, 2000));
+                }
+            }
+            throw lastErr;
+        }
+
         function switchTab(tabId) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -1974,7 +1998,7 @@
             
             // 1. Fetch Ingestion/Clustered insights
             try {
-                const response = await fetch(`${BACKEND_URL}/mcp/latest-results`, { cache: 'no-store' });
+                const response = await fetchWithWake(`${BACKEND_URL}/mcp/latest-results`, { cache: 'no-store' });
                 if (!response.ok) throw new Error(`Insights returned HTTP ${response.status}`);
                 
                 const data = await response.json();
@@ -1996,7 +2020,7 @@
 
             // 2. Fetch raw reviews database
             try {
-                const response = await fetch(`${BACKEND_URL}/mcp/reviews`, { cache: 'no-store' });
+                const response = await fetchWithWake(`${BACKEND_URL}/mcp/reviews`, { cache: 'no-store' });
                 if (!response.ok) throw new Error(`Reviews returned HTTP ${response.status}`);
                 
                 allReviews = await response.json();
