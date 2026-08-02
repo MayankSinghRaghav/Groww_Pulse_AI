@@ -2,10 +2,14 @@ name: Groww Pulsator Automated Ingestion Pipeline
 
 on:
   schedule:
-    # Trigger at 00:00 UTC on every 8th day of the month (e.g. 1st, 9th, 17th, 25th)
-    - cron: '0 0 */8 * *'
+    # Weekly review digest — every Monday at 00:00 UTC.
+    # (Was '0 0 */8 * *', which resets each month to days 1/9/17/25, not a clean 8-day cadence.)
+    - cron: '0 0 * * 1'
   workflow_dispatch:
     # Allow manual triggers at any time from GitHub UI
+
+permissions:
+  contents: write   # required so the bot can push the generated data back to main
 
 jobs:
   run-pipeline:
@@ -48,14 +52,12 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         
-        # Add generated processed data and outputs to commit
-        git add backend/data/processed/clean_reviews_*.json
-        git add backend/data/outputs/clustered_insights.json
-        git add backend/data/outputs/Groww_weekly_pulse_*.md
-        git add backend/data/outputs/Groww_weekly_pulse_*.pdf
-        git add backend/data/outputs/Groww_Pulse_*_*.pdf
-        git add backend/data/outputs/Groww_stakeholder_emails_*.json
-        
+        # Force-add generated data: these paths are in .gitignore, so a plain
+        # `git add` is a silent no-op and the commit below never happens.
+        # -f overrides the ignore; adding the dirs avoids "pathspec did not match"
+        # failures when an optional output (e.g. a PDF) wasn't produced this run.
+        git add -f backend/data/processed backend/data/outputs
+
         # Check if there are changes to commit
         if git diff-index --quiet HEAD --; then
           echo "No new reviews or generated briefs to commit."

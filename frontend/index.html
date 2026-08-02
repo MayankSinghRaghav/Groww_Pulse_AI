@@ -5,45 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Groww Pulsator — AI-Powered Review Intelligence</title>
     <meta name="description" content="Groww Pulsator — Premium AI-powered app review analytics, sentiment analysis, and stakeholder briefings.">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
     <!-- Chart.js CDN for stunning interactive animated charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Highlight.js for VS Code-style syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         :root {
-            /* Official Groww Branding Theme */
+            /* Premium Fintech Light Theme Variables */
+            --bg-primary: #F9FAFB;          
+            --bg-surface: #FFFFFF;          
+            --bg-card: #FFFFFF; 
+            --bg-page: #F3F4F6;
             --brand-blue: #5367F5;
-            --brand-blue-glow: rgba(83, 103, 245, 0.18);
             --brand-green: #00D09C;
-            --brand-green-logo: #08F6B6;
-            --accent-blue-a: #B1D0FB;
-            --accent-blue-b: #E5F4FD;
-            
-            /* Interface Layout Colors - Premium Slate Light Theme */
-            --bg-page: #F6F9FD;
-            --bg-card: #FFFFFF;
-            --bg-card-hover: #F1F6FC;
-            --border-color: rgba(177, 208, 251, 0.45); /* Accent Blue A at 45% */
-            --text-main: #1C2331;
-            --text-muted: #5E6E85;
+            --brand-green-logo: #00A67C;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --success: #10B981;
+            --accent-green: #00D09C;        
+            --accent-amber: #F59E0B;        
+            --text-primary: #111827;       
+            --text-main: #1F2937;
+            --text-muted: #6B7280;          
+            --border-subtle: #E5E7EB;
+            --border-color: #D1D5DB;
             --white: #FFFFFF;
-            
-            --success: #00D09C;
-            --warning: #FFA726;
-            --danger: #EF5350;
+            --accent-blue-b: #EEF2FF;
+            --accent-blue-a: #C7D2FE;
+            --brand-blue-glow: rgba(83, 103, 245, 0.2);
+            --grid-dot: rgba(0,0,0,0.05);
         }
 
         body.dark-theme {
             /* Layout Color Overrides for Premium Night Mode */
-            --bg-page: #0D1117;
+            --bg-primary: #0A0F1E;
+            --bg-surface: #0F1524;
             --bg-card: #161B22;
+            --bg-page: #0D1117;
             --bg-card-hover: #21262D;
-            --border-color: rgba(177, 208, 251, 0.12); /* Softer borders for dark theme */
+            --text-primary: #F0F6FC;
             --text-main: #F0F6FC;
             --text-muted: #8B949E;
-            --white: #0D1117; /* Dark header and sections */
-            --accent-blue-b: #161B22; /* Dark card tint */
-            --accent-blue-a: #30363D; /* Dark selected border color */
+            --white: #0D1117; 
+            --border-subtle: rgba(255,255,255,0.08);
+            --border-color: rgba(177, 208, 251, 0.12);
+            --accent-blue-b: #161B22; 
+            --accent-blue-a: #30363D; 
             --brand-blue-glow: rgba(83, 103, 245, 0.35);
+            --grid-dot: rgba(255,255,255,0.04);
+            --warning: #FACC15;
+            --success: #4ADE80;
         }
 
         * {
@@ -53,13 +66,16 @@
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-page);
-            color: var(--text-main);
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            /* Subtle grid‑dot texture */
+            background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
         /* Scrollbar styling */
@@ -194,39 +210,64 @@
         }
 
         /* Navigation Tabs block */
-        .nav-tabs-container {
-            background-color: var(--white);
-            border-bottom: 1px solid var(--border-color);
-            padding: 0 24px;
-            display: flex;
-            gap: 8px;
-            box-shadow: 0 2px 5px rgba(83, 103, 245, 0.02);
-        }
+  .nav-tabs-container {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 0 24px;
+    display: flex;
+    gap: 4px;
+    position: relative;
+}
 
-        .nav-tab {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            padding: 16px 20px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s ease;
-            position: relative;
-        }
+.btn-reset {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+}
 
-        .nav-tab:hover {
-            color: var(--brand-blue);
-        }
+.btn-reset:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    border-color: #EF4444;
+}
 
-        .nav-tab.active {
-            color: var(--brand-blue);
-            border-bottom-color: var(--brand-blue);
-        }
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-tab {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 20px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s ease, background 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-tab:hover {
+    color: var(--white);
+    background: rgba(0,208,156,0.08);
+}
+
+.nav-tab.active {
+    color: var(--accent-green);
+    border-bottom: 2px solid var(--accent-green);
+}
 
         /* Container & Grid layout */
         .container {
@@ -253,19 +294,20 @@
 
         /* Cards & Styling panels */
         .card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
             padding: 24px;
             margin-bottom: 24px;
-            box-shadow: 0 4px 15px rgba(83, 103, 245, 0.03);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
             transition: all 0.2s ease;
         }
 
         .card.hoverable:hover {
-            border-color: var(--accent-blue-a);
-            background-color: var(--bg-card-hover);
-            box-shadow: 0 6px 20px rgba(83, 103, 245, 0.06);
+            border-color: var(--accent-amber);
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 6px 30px rgba(0,0,0,0.4);
         }
 
         .grid-2 {
@@ -470,10 +512,10 @@
         }
 
         .filter-label {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-muted);
             font-weight: 700;
-            letter-spacing: 0.8px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
         }
 
@@ -486,14 +528,14 @@
 
         .btn-pill {
             background: none;
-            border: none;
+            border: 1px solid rgba(255,255,255,0.15);
             color: var(--text-muted);
             padding: 6px 12px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: background 0.2s ease, color 0.2s ease;
         }
 
         .btn-pill:hover {
@@ -501,9 +543,10 @@
         }
 
         .btn-pill.active {
-            background: var(--white);
-            color: var(--brand-blue);
-            box-shadow: 0 2px 6px rgba(83, 103, 245, 0.08);
+            background: var(--accent-green);
+            color: #000;
+            font-weight: 600;
+            border-color: var(--accent-green);
         }
 
         .btn-reset {
@@ -517,7 +560,7 @@
         }
 
         .btn-reset:hover {
-            color: var(--brand-blue);
+            color: #EF4444;
         }
 
         /* Rating Distribution Bars */
@@ -1152,11 +1195,169 @@
             background: var(--white);
         }
 
+        /* ===== Pipeline Terminal Card ===== */
+        .pipeline-card {
+            background: #080D1A !important;
+            border: 1px solid rgba(0,208,156,0.15) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        .pipeline-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00D09C 0%, #0066FF 100%);
+            opacity: 0.6;
+        }
+        .pipeline-button {
+            background: linear-gradient(135deg, #00D09C 0%, #0066FF 100%) !important;
+            color: #fff !important;
+            border: none !important;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-radius: 8px;
+            padding: 14px 24px;
+            font-size: 13px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+        }
+        .pipeline-button:hover {
+            box-shadow: 0 0 30px rgba(0,208,156,0.35), 0 0 60px rgba(0,102,255,0.15);
+            transform: translateY(-1px);
+        }
+        .pipeline-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .pipeline-button::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+            transform: translateX(-100%);
+            transition: none;
+        }
+        .pipeline-button:hover::after {
+            animation: shimmer 0.8s forwards;
+        }
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        .pipeline-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 999px;
+            margin-top: 16px;
+            overflow: hidden;
+            display: none;
+        }
+        .pipeline-progress-bar.active {
+            display: block;
+        }
+        .pipeline-progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #00D09C, #0066FF);
+            box-shadow: 0 0 12px rgba(0,208,156,0.5);
+            transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        .pipeline-status {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--accent-green);
+            margin-top: 10px;
+            min-height: 18px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .pipeline-status.active {
+            opacity: 1;
+        }
+        .pipeline-status .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* VS Code-style JSON block */
+        .json-code-block {
+            background: #0d1117 !important;
+            border: 1px solid rgba(0,208,156,0.12) !important;
+            border-radius: 10px;
+            padding: 20px 24px !important;
+            overflow-x: auto;
+            position: relative;
+        }
+        .json-code-block::before {
+            content: 'JSON';
+            position: absolute;
+            top: 8px; right: 12px;
+            font-size: 9px;
+            font-family: 'DM Mono', monospace;
+            color: rgba(255,255,255,0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .json-code-block pre {
+            margin: 0;
+            font-family: 'DM Mono', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e6edf3;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .json-code-block .hljs {
+            background: transparent !important;
+            padding: 0 !important;
+        }
+        .debug-toggle-btn {
+            margin-top: 30px;
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(0,208,156,0.04);
+            color: var(--text-muted);
+            border: 1px dashed rgba(0,208,156,0.2);
+            border-radius: 10px;
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .debug-toggle-btn:hover {
+            background: rgba(0,208,156,0.08);
+            border-color: rgba(0,208,156,0.35);
+            color: var(--accent-green);
+        }
+
         @media (max-width: 1024px) {
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .grid-5 { grid-template-columns: 1fr 1fr; }
             .health-grid { grid-template-columns: 1fr; }
-        }
+        } @media (max-width: 768px) {
+    .nav-tabs-container { overflow-x:auto; }
+    .grid-2 { grid-template-columns:1fr; }
+    .health-grid { grid-template-columns:1fr; }
+    .header-btn-sync { max-width:32px; overflow:hidden; text-overflow:clip; white-space:nowrap; padding:8px; display:flex; justify-content:center; align-items:center; }
+    .header-btn-sync .btn-text { display: none; }
+    .filter-panel { display:flex; flex-wrap:wrap; gap:8px; }
+    .ai-categorize-panel { flex-direction: column; align-items: stretch; gap: 16px; }
+    .header-filters { flex-wrap: wrap; justify-content: flex-end; }
+    .tab-indicator { display: none; }
+}
     </style>
 </head>
 <body>
@@ -1201,15 +1402,15 @@
             
             <span style="width: 1px; height: 20px; background: var(--border-color); margin: 0 8px;"></span>
             
-            <a id="connect-gmail-btn" class="header-btn-sync" href="#" style="display: none; background: var(--accent-blue-b); border-color: var(--accent-blue-a); color: var(--brand-blue);">
-                🔑 Connect Gmail
+            <a id="connect-gmail-btn" class="header-btn-sync" href="#" style="display: none; background: var(--accent-blue-b); border-color: var(--accent-blue-a); color: var(--brand-blue);" title="Connect Gmail">
+                <span>🔑</span><span class="btn-text">&nbsp;Connect Gmail</span>
             </a>
             <span id="gmail-status" style="display: none; background: rgba(0, 208, 156, 0.12); color: var(--brand-green); border: 1px solid rgba(0, 208, 156, 0.3); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;">
                 ✓ Gmail Connected
             </span>
             
-            <button class="header-btn-sync" onclick="triggerPulse()">
-                <span>🔄</span> Sync Android
+            <button id="run-btn" class="header-btn-sync" onclick="triggerPulse()" title="Sync Android">
+                <span>🔄</span><span class="btn-text">&nbsp;Sync Android</span>
             </button>
             <button class="header-theme-toggle" onclick="toggleThemeMode()" title="Toggle Day/Night Mode">
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="color: var(--brand-blue);">
@@ -1222,23 +1423,24 @@
     <!-- Secondary Tab Bar -->
     <div class="nav-tabs-container">
         <button class="nav-tab active" onclick="switchTab('overview')" id="tab-overview">
-            <span>📝</span> Reviews
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h12v16H4z"/></svg> Reviews
         </button>
         <button class="nav-tab" onclick="switchTab('analytics')" id="tab-analytics">
-            <span>📊</span> Analytics
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M3 3h2v18H3zM9 7h2v14H9zM15 11h2v10h-2z"/></svg> Analytics
         </button>
         <button class="nav-tab" onclick="switchTab('categories')" id="tab-categories">
-            <span>🏷️</span> Categories
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h6l2 4 4-2v12H4z"/></svg> Categories
         </button>
         <button class="nav-tab" onclick="switchTab('wordcloud')" id="tab-wordcloud">
-            <span>☁️</span> Word Cloud
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/></svg> Word Cloud
         </button>
         <button class="nav-tab" onclick="switchTab('ideation')" id="tab-ideation">
-            <span>💡</span> Ideation
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a5 5 0 015 5h-2a3 3 0 00-3-3V2zM6 12a6 6 0 0112 0h-2a4 4 0 00-8 0H6z"/></svg> Ideation
         </button>
         <button class="nav-tab" onclick="switchTab('reporting')" id="tab-reporting">
-            <span>📁</span> Reporting
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M4 4h16v12H4zM4 8h16"/></svg> Reporting
         </button>
+        <div class="tab-indicator"></div>
     </div>
 
     <!-- Page Contents Container -->
@@ -1534,27 +1736,41 @@
                 </div>
 
                 <div>
-                    <div class="card" style="border-left: 4px solid var(--brand-blue);">
-                        <h4 style="font-size: 15px; margin-bottom: 12px; font-weight: 700; color: var(--text-main);">🚀 Automated Execution Pipeline</h4>
-                        <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;">
-                            Trigger a weekly ingestion, classification, and report briefing pipeline. The system automatically scrapes reviews from Google Play Store, classifies themes, generates branded stakeholder PDFs, and drafts secure Gmail briefs.
+                    <div class="card pipeline-card">
+                        <div class="pipeline-terminal-header" style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                            <span style="width:10px;height:10px;border-radius:50%;background:#EF4444;"></span>
+                            <span style="width:10px;height:10px;border-radius:50%;background:#FACC15;"></span>
+                            <span style="width:10px;height:10px;border-radius:50%;background:#00D09C;"></span>
+                            <span style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.3);margin-left:8px;">pipeline://groww-pulse</span>
+                        </div>
+                        <h4 style="font-size:15px; margin-bottom:12px; font-weight:700; color:var(--accent-green); font-family:'DM Mono',monospace;">$ Automated Execution Pipeline</h4>
+                        <p style="font-size:13px; color:var(--text-muted); line-height:1.7; margin-bottom:24px; font-family:'DM Mono',monospace;">
+                            Trigger a weekly ingestion, classification, and report briefing pipeline. The system automatically scrapes reviews, classifies themes, generates stakeholder PDFs, and drafts Gmail briefs.
                         </p>
-                        <button class="btn-action btn-primary" onclick="triggerPulse()" id="run-btn-reporting" style="background: var(--brand-blue); color: var(--white); box-shadow: 0 4px 15px var(--brand-blue-glow); border: none; font-weight: 700; width: 100%; justify-content: center;">
+                        <button class="pipeline-button" onclick="triggerPulse()" id="run-btn-reporting">
                             🚀 RUN FULL EXECUTION PIPELINE
                         </button>
+                        <div id="pipeline-progress-bar" class="pipeline-progress-bar">
+                            <div id="pipeline-progress-fill" class="pipeline-progress-fill"></div>
+                        </div>
+                        <div id="pipeline-status" class="pipeline-status"></div>
                     </div>
                 </div>
             </div>
 
             <!-- JSON raw debug data panel -->
             <div class="debug-section">
-                <button class="btn-action btn-secondary" onclick="toggleDebugData()" style="margin-top: 40px; width: 100%; justify-content: center; background: rgba(83,103,245,0.03); color: var(--text-muted); border: 1px dashed rgba(83,103,245,0.15); border-radius: 12px; font-size: 11px;">
-                    <span class="btn-text">🛠 View Technical Ingestion JSON Payload</span>
+                <button class="debug-toggle-btn" onclick="toggleDebugData()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/></svg>
+                    View Technical Ingestion JSON Payload
                 </button>
                 <div id="debug-data-container" style="display: none; margin-top: 20px;">
-                    <div class="section-title" style="margin-bottom: 14px; font-size: 13px; color: var(--text-main);">Raw Technical Insights Ingestion Payload</div>
-                    <div class="card" style="background: #0C1A30; color: #9AE6B4; font-family: 'Courier New', Courier, monospace; padding: 25px; overflow-x: auto; font-size: 12px; border: 1px solid var(--border-color);">
-                        <pre id="json-raw">{}</pre>
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><path d="M16 18l6-6-6-6"/><path d="M8 6l-6 6 6 6"/></svg>
+                        <span style="font-family:'DM Mono',monospace; font-size:12px; color:var(--text-muted);">Raw Technical Insights Ingestion Payload</span>
+                    </div>
+                    <div class="json-code-block">
+                        <pre><code id="json-raw" class="language-json">{}</code></pre>
                     </div>
                 </div>
             </div>
@@ -1566,7 +1782,7 @@
 
     <!-- DYNAMIC DASHBOARD DATA & FLOW ENGINE -->
     <script>
-        const DEFAULT_BACKEND = "https://groww-pulse-ai.onrender.com"; 
+        const DEFAULT_BACKEND = "http://localhost:8000"; 
         const params = new URLSearchParams(window.location.search);
         const BACKEND_URL = params.get('backend') || DEFAULT_BACKEND;
 
@@ -1587,6 +1803,22 @@
         let ratingsChartInstance = null;
         let trendsChartInstance = null;
 
+        function toggleThemeMode() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem('pulse_theme', isDark ? 'dark' : 'light');
+            
+            // Re-render charts if analytics is active
+            if (document.getElementById('content-analytics').classList.contains('active')) {
+                renderAnalyticsCharts();
+            }
+        }
+
+        // Apply saved theme on load
+        if (localStorage.getItem('pulse_theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+
         // ==================== Toast & UI Helpers ====================
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -1605,7 +1837,7 @@
             // Show selected tab
             document.getElementById(`content-${tabId}`).classList.add('active');
             document.getElementById(`tab-${tabId}`).classList.add('active');
-            
+
             // Special initialization for charts
             if (tabId === 'analytics') {
                 // Short timeout to guarantee layout renders before loading charts
@@ -1623,40 +1855,83 @@
         }
 
         // ==================== Pipeline Trigger ====================
+        function updatePipelineStatus(text) {
+            const statusEl = document.getElementById('pipeline-status');
+            if (statusEl) {
+                statusEl.innerHTML = `<span style="color:var(--accent-green)">▸</span> ${text}<span class="cursor-blink">█</span>`;
+                statusEl.classList.add('active');
+            }
+        }
+
         async function triggerPulse() {
+            const progressBarContainer = document.getElementById('pipeline-progress-bar');
+            const progressFill = document.getElementById('pipeline-progress-fill');
+            const statusEl = document.getElementById('pipeline-status');
+            
             const btnHeader = document.getElementById('run-btn');
             const btnReporting = document.getElementById('run-btn-reporting');
             
             const originalHeaderText = btnHeader ? btnHeader.innerHTML : "Sync Android";
-            const originalReportText = btnReporting ? btnReporting.innerHTML : "RUN FULL EXECUTION PIPELINE";
+            const originalReportText = btnReporting ? btnReporting.innerHTML : "🚀 RUN FULL EXECUTION PIPELINE";
+            
+            // Show progress bar
+            if (progressBarContainer) { progressBarContainer.classList.add('active'); }
+            if (progressFill) { progressFill.style.width = '0%'; }
             
             if (btnHeader) {
                 btnHeader.innerHTML = "⌛ Syncing...";
                 btnHeader.disabled = true;
             }
             if (btnReporting) {
-                btnReporting.innerHTML = "⌛ PIPELINE RUNNING (2 MINS)...";
                 btnReporting.disabled = true;
-                btnReporting.style.opacity = "0.5";
+                btnReporting.innerHTML = "⌛ PIPELINE RUNNING...";
             }
 
+            // Stage 1: Scraping reviews
+            updatePipelineStatus('Scraping reviews from Google Play Store...');
+            if (progressFill) { progressFill.style.width = '15%'; }
+
             try {
-                showToast("🚀 Initiating app store review scraper & analysis...", "info");
+                showToast(`🚀 Initiating app store review scraper & analysis...`, "info");
+                
+                // Animate progress through stages with timeouts
+                const stageTimers = [];
+                stageTimers.push(setTimeout(() => {
+                    updatePipelineStatus('Classifying themes with AI engine...');
+                    if (progressFill) { progressFill.style.width = '45%'; }
+                }, 1200));
+                stageTimers.push(setTimeout(() => {
+                    updatePipelineStatus('Generating stakeholder PDF reports...');
+                    if (progressFill) { progressFill.style.width = '75%'; }
+                }, 2400));
+
                 const response = await fetch(`${BACKEND_URL}/mcp/run-weekly-pulse`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ app_name: "Groww", weeks: 8 })
                 });
                 
+                // Clear stage timers
+                stageTimers.forEach(t => clearTimeout(t));
+                
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.detail || `Server Error ${response.status}`);
                 }
                 
-                showToast("✅ Pipeline succeeded! Updating dashboard stats...", "success");
+                // Success
+                updatePipelineStatus('Pipeline completed successfully ✓');
+                if (progressFill) { progressFill.style.width = '100%'; }
+                showToast(`✅ Pipeline succeeded! Updating dashboard stats...`, "success");
+                
                 await fetchPulseData();
             } catch (err) {
                 showToast(`❌ Pulse execution failed: ${err.message}`, "error");
+                if (statusEl) {
+                    statusEl.innerHTML = `<span style="color:#EF4444">✗</span> Error: ${err.message}`;
+                    statusEl.classList.add('active');
+                }
+                if (progressFill) { progressFill.style.width = '100%'; progressFill.style.background = 'linear-gradient(90deg, #EF4444, #FF6B6B)'; }
             } finally {
                 if (btnHeader) {
                     btnHeader.innerHTML = originalHeaderText;
@@ -1665,8 +1940,13 @@
                 if (btnReporting) {
                     btnReporting.innerHTML = originalReportText;
                     btnReporting.disabled = false;
-                    btnReporting.style.opacity = "1";
                 }
+                // Reset progress bar after delay
+                setTimeout(() => {
+                    if (progressBarContainer) { progressBarContainer.classList.remove('active'); }
+                    if (progressFill) { progressFill.style.width = '0%'; progressFill.style.background = ''; }
+                    if (statusEl) { statusEl.classList.remove('active'); statusEl.innerHTML = ''; }
+                }, 4000);
             }
         }
 
@@ -1694,7 +1974,7 @@
             
             // 1. Fetch Ingestion/Clustered insights
             try {
-                const response = await fetch(`${BACKEND_URL}/mcp/latest-results`);
+                const response = await fetch(`${BACKEND_URL}/mcp/latest-results`, { cache: 'no-store' });
                 if (!response.ok) throw new Error(`Insights returned HTTP ${response.status}`);
                 
                 const data = await response.json();
@@ -1716,7 +1996,7 @@
 
             // 2. Fetch raw reviews database
             try {
-                const response = await fetch(`${BACKEND_URL}/mcp/reviews`);
+                const response = await fetch(`${BACKEND_URL}/mcp/reviews`, { cache: 'no-store' });
                 if (!response.ok) throw new Error(`Reviews returned HTTP ${response.status}`);
                 
                 allReviews = await response.json();
@@ -1875,9 +2155,13 @@
         }
 
         // ==================== Filtering Logic ====================
+        let searchTimeout;
         function handleSearch() {
-            searchQuery = document.getElementById('review-search').value.toLowerCase().trim();
-            applyFilters();
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchQuery = document.getElementById('review-search').value.toLowerCase().trim();
+                applyFilters();
+            }, 300);
         }
 
         function resetFilters() {
@@ -1919,7 +2203,10 @@
                 if (searchQuery && !r.content.toLowerCase().includes(searchQuery)) return false;
 
                 // Keyword match (Word Cloud)
-                if (selectedKeyword && !r.content.toLowerCase().includes(selectedKeyword)) return false;
+                if (selectedKeyword) {
+                    const regex = new RegExp('\\b' + selectedKeyword + '\\b', 'i');
+                    if (!regex.test(r.content)) return false;
+                }
 
                 return true;
             });
@@ -1968,26 +2255,36 @@
 
         // ==================== Render Word Cloud Tab ====================
         function renderWordCloud() {
-            const words = [
-                { term: "chart", weight: 32, color: "var(--brand-blue)" },
-                { term: "support", weight: 28, color: "var(--warning)" },
-                { term: "brokerage", weight: 26, color: "var(--danger)" },
-                { term: "charges", weight: 24, color: "var(--danger)" },
-                { term: "KYC", weight: 22, color: "var(--danger)" },
-                { term: "slow", weight: 20, color: "var(--warning)" },
-                { term: "payment", weight: 18, color: "var(--brand-blue)" },
-                { term: "withdraw", weight: 16, color: "var(--brand-blue)" },
-                { term: "trading", weight: 15, color: "var(--brand-blue)" },
-                { term: "indicators", weight: 14, color: "var(--text-main)" },
-                { term: "intraday", weight: 13, color: "var(--text-main)" },
-                { term: "lagging", weight: 12, color: "var(--danger)" },
-                { term: "worst", weight: 11, color: "var(--danger)" },
-                { term: "excellent", weight: 10, color: "var(--brand-green)" },
-                { term: "login", weight: 9, color: "var(--warning)" }
-            ];
+            if (!allReviews || allReviews.length === 0) return;
+            
+            const stopWords = new Set(['the', 'and', 'is', 'in', 'to', 'of', 'it', 'for', 'a', 'this', 'that', 'with', 'on', 'as', 'are', 'i', 'my', 'app', 'very', 'not', 'but', 'so', 'have', 'from', 'you', 'can', 'be', 'will', 'groww']);
+            const wordCounts = {};
+            
+            allReviews.forEach(r => {
+                const words = r.content.toLowerCase().match(/\b[a-z]{4,}\b/g) || [];
+                words.forEach(w => {
+                    if (!stopWords.has(w)) {
+                        wordCounts[w] = (wordCounts[w] || 0) + 1;
+                    }
+                });
+            });
+            
+            const sortedWords = Object.entries(wordCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15)
+                .map((entry, idx) => {
+                    let color = 'var(--text-main)';
+                    if (idx < 3) color = 'var(--brand-blue)';
+                    else if (idx < 7) color = 'var(--warning)';
+                    else if (idx < 11) color = 'var(--danger)';
+                    // Scale weight dynamically between 10 and 32
+                    const maxCount = Object.values(wordCounts).reduce((a,b)=>Math.max(a,b), 1);
+                    const weight = 10 + (entry[1] / maxCount) * 22;
+                    return { term: entry[0], weight: weight, color };
+                });
 
             const container = document.getElementById('word-cloud-words');
-            container.innerHTML = words.map(w => {
+            container.innerHTML = sortedWords.map(w => {
                 const fontSize = 12 + (w.weight * 0.8);
                 const activeStyle = selectedKeyword === w.term ? `background: var(--brand-blue); color: white; box-shadow: 0 0 10px var(--brand-blue-glow); border-color: var(--brand-blue);` : '';
                 return `<span class="cloud-word" style="font-size: ${fontSize}px; color: ${w.color}; ${activeStyle}" onclick="toggleKeywordFilter('${w.term}')">${w.term}</span>`;
@@ -2025,87 +2322,148 @@
             const passives = ratingsDist[2];
             const detractors = ratingsDist[1] + ratingsDist[0];
 
-            // 1. Sentiment Chart
-            if (sentimentChartInstance) sentimentChartInstance.destroy();
-            sentimentChartInstance = new Chart(ctxSentiment, {
-                type: 'bar',
-                data: {
-                    labels: ['Positive', 'Neutral', 'Negative'],
-                    datasets: [{
-                        data: [promoters, passives, detractors],
-                        backgroundColor: ['#00D09C', '#FFA726', '#EF5350'],
-                        borderColor: ['#00C090', '#EC9615', '#DC413E'],
-                        borderWidth: 1,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: 'rgba(83,103,245,0.06)' }, ticks: { color: '#5E6E85' } },
-                        x: { ticks: { color: '#5E6E85' } }
+            // ---------- Sentiment Donut Chart ----------
+            if (sentimentChartInstance) {
+                sentimentChartInstance.data.datasets[0].data = [promoters, passives, detractors];
+                sentimentChartInstance.update();
+            } else {
+                sentimentChartInstance = new Chart(ctxSentiment, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Positive', 'Neutral', 'Negative'],
+                        datasets: [{
+                            data: [promoters, passives, detractors],
+                            backgroundColor: ['#00D09C', '#FACC15', '#EF4444'],
+                            borderColor: 'rgba(0,0,0,0)',
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                titleColor: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+                                bodyColor: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+                                borderColor: getComputedStyle(document.body).getPropertyValue('--border-subtle').trim(),
+                                borderWidth: 1,
+                                titleFont: { family: 'DM Mono', size: 12 },
+                                bodyFont: { family: 'DM Mono', size: 12 },
+                                padding: 8
+                            },
+                            // Center label showing dominant sentiment
+                            beforeDraw: (chart) => {
+                                const { ctx, width, height, data } = chart;
+                                ctx.save();
+                                const max = Math.max(...data.datasets[0].data);
+                                const index = data.datasets[0].data.indexOf(max);
+                                const label = data.labels[index] || '';
+                                ctx.font = '12px "DM Mono"';
+                                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-primary').trim();
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(label, width / 2, height / 2);
+                                ctx.restore();
+                            }
+                        },
+                        animation: { duration: 300 }
                     }
-                }
-            });
+                });
+            }
 
-            // 2. Ratings Chart
-            if (ratingsChartInstance) ratingsChartInstance.destroy();
-            ratingsChartInstance = new Chart(ctxRatings, {
-                type: 'bar',
-                data: {
-                    labels: ['1★', '2★', '3★', '4★', '5★'],
-                    datasets: [{
-                        data: ratingsDist,
-                        backgroundColor: ['#EF5350', '#FF7043', '#FFA726', '#5367F5', '#00D09C'],
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { grid: { color: 'rgba(83,103,245,0.06)' }, ticks: { color: '#5E6E85' } },
-                        x: { ticks: { color: '#5E6E85' } }
+            // ---------- Rating Distribution Horizontal Bar Chart ----------
+            if (ratingsChartInstance) {
+                ratingsChartInstance.data.datasets[0].data = ratingsDist;
+                ratingsChartInstance.update();
+            } else {
+                ratingsChartInstance = new Chart(ctxRatings, {
+                    type: 'bar',
+                    data: {
+                        labels: ['1★', '2★', '3★', '4★', '5★'],
+                        datasets: [{
+                            data: ratingsDist,
+                            backgroundColor: ['#EF4444', '#FB923C', '#FACC15', '#4ADE80', '#00D09C'],
+                            borderRadius: 10,
+                            barThickness: 8,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', // horizontal bars
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                titleColor: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+                                bodyColor: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+                                borderColor: getComputedStyle(document.body).getPropertyValue('--border-subtle').trim(),
+                                borderWidth: 1,
+                                titleFont: { family: 'DM Mono', size: 12 },
+                                bodyFont: { family: 'DM Mono', size: 12 },
+                                padding: 8
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(255,255,255,0.05)' },
+                                ticks: { color: '#5E6E85' }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255,255,255,0.05)' },
+                                ticks: { color: '#5E6E85' }
+                            }
+                        },
+                        animation: { duration: 300 }
                     }
-                }
-            });
+                });
+            }
 
-            // 3. Trends Line Chart (Past 5 days summary)
+            // ---------- Trend Analysis Area Chart ----------
             if (trendsChartInstance) trendsChartInstance.destroy();
+            const ctxTrend = ctxTrends.getContext('2d');
+            const gradient = ctxTrend.createLinearGradient(0, 0, 0, ctxTrend.canvas.height);
+            gradient.addColorStop(0, 'rgba(0,208,156,0.4)');
+            gradient.addColorStop(1, 'rgba(0,208,156,0)');
             trendsChartInstance = new Chart(ctxTrends, {
                 type: 'line',
                 data: {
                     labels: ['May 13', 'May 14', 'May 15', 'May 16', 'May 17'],
-                    datasets: [
-                        {
-                            label: 'Positive',
-                            data: [15, 32, 45, 82, 114],
-                            borderColor: '#00D09C',
-                            backgroundColor: 'rgba(0,208,156,0.08)',
-                            fill: true,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Negative',
-                            data: [3, 8, 12, 18, 14],
-                            borderColor: '#EF5350',
-                            backgroundColor: 'rgba(239,83,80,0.08)',
-                            fill: true,
-                            tension: 0.4
-                        }
-                    ]
+                    datasets: [{
+                        label: 'Sentiment',
+                        data: [15, 32, 45, 82, 114],
+                        borderColor: '#00D09C',
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.4
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#5E6E85' } } },
+                    plugins: {
+                        legend: { labels: { color: '#5E6E85' } },
+                        tooltip: {
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            titleColor: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+                            bodyColor: getComputedStyle(document.body).getPropertyValue('--text-primary').trim(),
+                            borderColor: getComputedStyle(document.body).getPropertyValue('--border-subtle').trim(),
+                            borderWidth: 1,
+                            titleFont: { family: 'DM Mono', size: 12 },
+                            bodyFont: { family: 'DM Mono', size: 12 },
+                            padding: 8
+                        }
+                    },
                     scales: {
-                        y: { grid: { color: 'rgba(83,103,245,0.06)' }, ticks: { color: '#5E6E85' } },
-                        x: { ticks: { color: '#5E6E85' } }
-                    }
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5E6E85' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5E6E85' } }
+                    },
+                    animation: { duration: 300 }
                 }
             });
         }
