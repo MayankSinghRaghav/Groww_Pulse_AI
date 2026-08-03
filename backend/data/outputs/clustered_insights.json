@@ -1,8 +1,8 @@
 {
   "local_clusters": {
     "Onboarding": {
-      "volume": 7,
-      "average_rating": 1.86,
+      "volume": 8,
+      "average_rating": 2.0,
       "representative_quotes": [
         "The Worrest App for Trading. Except the Groww Management, Nobody can Grow. Complete Fraud in each and every aspect. If any one wants to lose money instantly, You are most welcome to use this app. Rest, Please avoid this app",
         "Seriously Groww Prime for MFs? You guys started selling Regular MFs in the name of prime. I mean it's a shame. First introduce features like Daily, Weekly, Fortnightly SIPs and get rid of these regular options. Make the money flowing process easy. it's currently the worst. I get my money instantly in Zerodha, Angel one and ICICI direct... Groww just sucks. Focus on one thing at a time.",
@@ -19,17 +19,17 @@
       ]
     },
     "Payments": {
-      "volume": 22,
-      "average_rating": 3.55,
+      "volume": 23,
+      "average_rating": 3.43,
       "representative_quotes": [
+        "third class customer support and services they will not connect with customer supporting team I will try more than 5 times my amount can't transfer to my bank account or my grow account that will show process til 2 days before",
         "When I filled the details then groww debited 0.01 inr .This is very unsatisfied 😔😔",
-        "withdrawal process very worst not a given 24 hours payment",
-        "The final amount changes after the order is executed. Previously, the final amount was displayed upfront, but now the amount is adjusted after execution, causing the Wallet balance to show a negative amount. This feels misleading and unethical."
+        "withdrawal process very worst not a given 24 hours payment"
       ]
     },
     "Statements": {
-      "volume": 19,
-      "average_rating": 2.53,
+      "volume": 18,
+      "average_rating": 2.61,
       "representative_quotes": [
         "Dear Groww Team, I would like to share my feedback regarding your intraday brokerage charges. The brokerage on intraday trades is quite high, and in many cases it turns profitable trades into losses. This makes active trading difficult, especially for small traders. I request you to consider reducing the intraday brokerage charges or introducing a more affordable pricing plan. A lower brokerage structure would greatly benefit your users and encourage higher trading activity on your platform.",
         "useless app, very difficult too analyze stocks. Also my Demat account could not be added too Income tax portal. Your helpline always remains busy, it seems yo have no champions, always sleeping, no remedy. I feel trapped in your app, no solutions yet. Two factor authentication is not in your app, different app...",
@@ -46,8 +46,8 @@
       ]
     },
     "Performance & Stability": {
-      "volume": 15,
-      "average_rating": 3.47,
+      "volume": 14,
+      "average_rating": 3.36,
       "representative_quotes": [
         "worst app tbh it freezes every single time whenever I open it and even after reinstalling",
         "Fix the bugs, the nifty prices are shown different in different time frames and lots of lagging like 15-20 second I have to wait every time for loading the charts for last month after the recent update... so team Groww please fix these problems. thank you",
@@ -55,8 +55,8 @@
       ]
     },
     "Customer Support": {
-      "volume": 18,
-      "average_rating": 3.61,
+      "volume": 19,
+      "average_rating": 3.58,
       "representative_quotes": [
         "Their customer support bhogash,They are very poor, if you put SL on them, Even if it doesn't go to the market, their SL will be a hit.I'm talking to the owner of Grow. I'll give you a good job with good income. Why are you wasting money?",
         "custom support is not at all good, if you have an issue they won't be able to help you and they have a weird AI chatbot that will give you wrong answers to your question and if you ask a customer support person he will say sir that is just an AI",
@@ -66,6 +66,222 @@
   },
   "advanced_insights": {
     "Unclassified/Other": [
+      {
+        "id": "db67c7a2-5d53-42ce-b06d-90125fdfe504",
+        "platform": "google_play",
+        "date": "2026-08-02T02:13:07",
+        "rating": 5,
+        "content": "bahut hi achcha app Hai beginners ke liye banaa hai easy to use un comfortable",
+        "version": "18.14.0"
+      },
+      {
+        "id": "6302bf44-6aab-49c2-b89c-f387ab3d20d3",
+        "platform": "google_play",
+        "date": "2026-08-02T02:05:54",
+        "rating": 5,
+        "content": "thanks groww",
+        "version": "18.13.1"
+      },
+      {
+        "id": "edf11e96-3fe0-478d-9f3b-e45c934ef222",
+        "platform": "google_play",
+        "date": "2026-08-02T01:47:12",
+        "rating": 5,
+        "content": "it's nice and easy",
+        "version": null
+      },
+      {
+        "id": "9ad8e28e-47fb-4165-a9d9-f3e58bee7e23",
+        "platform": "google_play",
+        "date": "2026-08-02T01:25:25",
+        "rating": 5,
+        "content": "verry good",
+        "version": "18.14.0"
+      },
+      {
+        "id": "9411dd7a-f90a-4714-a91b-e9bf2357069a",
+        "platform": "google_play",
+        "date": "2026-08-02T01:14:08",
+        "rating": 4,
+        "content": "Best user experience if all apps are compared.",
+        "version": "18.14.0"
+      },
+      {
+        "id": "084bb55e-bc3a-40cc-9d39-f3f679c1dfb4",
+        "platform": "google_play",
+        "date": "2026-08-02T01:04:17",
+        "rating": 4,
+        "content": "best Investment application form indian ❣️🙏",
+        "version": "18.13.2"
+      },
+      {
+        "id": "abb6106c-70ef-4070-9876-15da0b06cea0",
+        "platform": "google_play",
+        "date": "2026-08-02T00:05:57",
+        "rating": 5,
+        "content": "grovw vere good app grovw is very easy touse.",
+        "version": "18.13.2"
+      },
+      {
+        "id": "c39a253f-a2a5-41c5-8d9d-5beb11431c0e",
+        "platform": "google_play",
+        "date": "2026-08-02T00:03:01",
+        "rating": 5,
+        "content": "best software for long term investment of all mutual fund and stock I am using more than 6 years",
+        "version": "17.88"
+      },
+      {
+        "id": "67757239-b6fe-4d6d-bb48-5f43a365b10e",
+        "platform": "google_play",
+        "date": "2026-08-01T21:05:39",
+        "rating": 5,
+        "content": "user friendly",
+        "version": "18.13.2"
+      },
+      {
+        "id": "0822a4b3-24a4-48a2-8274-1b5ee86b1a92",
+        "platform": "google_play",
+        "date": "2026-08-01T19:32:27",
+        "rating": 4,
+        "content": "easy to use",
+        "version": "18.12.1"
+      },
+      {
+        "id": "4bd5b139-bd9b-4b1c-ade3-b7c5f996ad9d",
+        "platform": "google_play",
+        "date": "2026-08-01T19:24:06",
+        "rating": 5,
+        "content": "best simple ui and user experience",
+        "version": "18.13.2"
+      },
+      {
+        "id": "c3ff5ec1-0b72-4ac6-b6f9-46670444fd4a",
+        "platform": "google_play",
+        "date": "2026-08-01T19:16:15",
+        "rating": 5,
+        "content": "The strength of this platform lies in its versatility and precision. It's rare to find a service that handles equities, futures, options, and commodities all at on...",
+        "version": null
+      },
+      {
+        "id": "59d26341-709b-492b-b2cc-de027b9c4a8a",
+        "platform": "google_play",
+        "date": "2026-08-01T17:58:36",
+        "rating": 5,
+        "content": "very nice 👍 good very good 💯",
+        "version": "18.13.2"
+      },
+      {
+        "id": "495a0cdf-662d-45ef-bf3f-c015ef6d912d",
+        "platform": "google_play",
+        "date": "2026-08-01T17:54:00",
+        "rating": 3,
+        "content": "heavy brokerage charges must reduce it down",
+        "version": "18.13.2"
+      },
+      {
+        "id": "77a86b27-20b3-4321-bd49-39266f4e78e7",
+        "platform": "google_play",
+        "date": "2026-08-01T17:53:59",
+        "rating": 5,
+        "content": "Best Application for investors Easy Ui and it improving after every Update",
+        "version": "18.14.0"
+      },
+      {
+        "id": "d2de2d61-67e5-4441-ab98-35a495ebeb08",
+        "platform": "google_play",
+        "date": "2026-08-01T17:17:11",
+        "rating": 1,
+        "content": "not user friendly",
+        "version": "18.13.2"
+      },
+      {
+        "id": "dc133d3f-f973-4934-b62f-ecc233749f0e",
+        "platform": "google_play",
+        "date": "2026-08-01T17:04:19",
+        "rating": 4,
+        "content": "nice exclusive j",
+        "version": "18.14.0"
+      },
+      {
+        "id": "6acd7f57-139e-470a-9223-2b5e2d56b094",
+        "platform": "google_play",
+        "date": "2026-08-01T16:33:16",
+        "rating": 5,
+        "content": "bhoot hi best hai app",
+        "version": "18.9.0"
+      },
+      {
+        "id": "043388f8-238d-40b1-96bc-68bbf7fe8fd9",
+        "platform": "google_play",
+        "date": "2026-08-01T16:23:00",
+        "rating": 3,
+        "content": "plz improved app in charts on entry and exist",
+        "version": "18.13.2"
+      },
+      {
+        "id": "c18d4b9a-4075-4891-9489-1afce506b6ba",
+        "platform": "google_play",
+        "date": "2026-08-01T16:13:38",
+        "rating": 4,
+        "content": "excellent",
+        "version": "18.13.2"
+      },
+      {
+        "id": "8eb1ec83-7305-40ba-a78d-f603bd95ea69",
+        "platform": "google_play",
+        "date": "2026-08-01T16:08:13",
+        "rating": 5,
+        "content": "super",
+        "version": "18.1.1"
+      },
+      {
+        "id": "89c8690a-8f4f-44d4-9667-04703770aaa8",
+        "platform": "google_play",
+        "date": "2026-08-01T15:58:44",
+        "rating": 5,
+        "content": "v good",
+        "version": "18.13.2"
+      },
+      {
+        "id": "601d1fa6-7933-4696-9a1c-9256311d12fd",
+        "platform": "google_play",
+        "date": "2026-08-01T15:51:03",
+        "rating": 5,
+        "content": "good application",
+        "version": "18.11.1"
+      },
+      {
+        "id": "54a01c15-2914-4b52-b6a6-8d3e657b11b0",
+        "platform": "google_play",
+        "date": "2026-08-01T14:55:33",
+        "rating": 5,
+        "content": "Good 👍",
+        "version": "18.13.2"
+      },
+      {
+        "id": "50a885b2-95eb-41a7-864b-e6091d1435b7",
+        "platform": "google_play",
+        "date": "2026-08-01T14:48:49",
+        "rating": 5,
+        "content": "excellent",
+        "version": "18.13.2"
+      },
+      {
+        "id": "ce58e27f-73d0-4435-abfa-ee61d9997aa2",
+        "platform": "google_play",
+        "date": "2026-08-01T14:35:05",
+        "rating": 5,
+        "content": "😊 best",
+        "version": "18.13.2"
+      },
+      {
+        "id": "c8423461-a854-4466-8b71-82aac62b0f73",
+        "platform": "google_play",
+        "date": "2026-08-01T14:31:53",
+        "rating": 5,
+        "content": "very good",
+        "version": "18.13.2"
+      },
       {
         "id": "f22835a2-3bdf-420e-a9f9-6fcbe96d1453",
         "platform": "google_play",
@@ -808,222 +1024,6 @@
         "date": "2026-07-31T10:12:29",
         "rating": 5,
         "content": "Easy to use.",
-        "version": "18.13.2"
-      },
-      {
-        "id": "b3146379-9f14-42c7-ab3d-53350d3263c6",
-        "platform": "google_play",
-        "date": "2026-07-31T10:12:18",
-        "rating": 4,
-        "content": "goods app",
-        "version": "18.14.0"
-      },
-      {
-        "id": "4a65a401-3f0b-4705-beec-fe2fd4644ce9",
-        "platform": "google_play",
-        "date": "2026-07-31T09:54:35",
-        "rating": 5,
-        "content": "very nice",
-        "version": "18.14.0"
-      },
-      {
-        "id": "a2a45db6-2ce3-4354-803a-0056a1d5393c",
-        "platform": "google_play",
-        "date": "2026-07-31T09:52:05",
-        "rating": 5,
-        "content": "good app",
-        "version": "18.14.0"
-      },
-      {
-        "id": "259793d0-b36e-49ba-bbd2-cb11ef3f8c81",
-        "platform": "google_play",
-        "date": "2026-07-31T09:31:22",
-        "rating": 5,
-        "content": "good aap",
-        "version": "18.13.2"
-      },
-      {
-        "id": "5c7cd550-636a-499d-acd9-2580226cb198",
-        "platform": "google_play",
-        "date": "2026-07-31T09:29:30",
-        "rating": 5,
-        "content": "easy to use",
-        "version": "18.13.2"
-      },
-      {
-        "id": "56db7707-d10e-43b0-8eb7-ece9c18f27a7",
-        "platform": "google_play",
-        "date": "2026-07-31T09:18:26",
-        "rating": 1,
-        "content": "Worst broker, always gives wrong trade on short/long. just want to trap the customer",
-        "version": "18.14.0"
-      },
-      {
-        "id": "597faab3-148b-4e03-a88d-4e7d07f1f478",
-        "platform": "google_play",
-        "date": "2026-07-31T09:10:41",
-        "rating": 5,
-        "content": "just awesome 😎",
-        "version": "18.14.0"
-      },
-      {
-        "id": "4c04cea9-39b2-4a95-862e-35d127935a9c",
-        "platform": "google_play",
-        "date": "2026-07-31T09:01:34",
-        "rating": 5,
-        "content": "great",
-        "version": "18.10.1"
-      },
-      {
-        "id": "87571822-18e8-4f64-b744-f60d64f641e9",
-        "platform": "google_play",
-        "date": "2026-07-31T08:47:53",
-        "rating": 5,
-        "content": "good 👍",
-        "version": null
-      },
-      {
-        "id": "b273f913-a208-4138-bc3f-6fadbe41fc96",
-        "platform": "google_play",
-        "date": "2026-07-31T08:38:10",
-        "rating": 5,
-        "content": "best experience... proud Grow",
-        "version": "18.11.1"
-      },
-      {
-        "id": "742664d9-666c-42fe-83a8-6699bcc5311f",
-        "platform": "google_play",
-        "date": "2026-07-31T08:08:09",
-        "rating": 5,
-        "content": "best market",
-        "version": "18.13.2"
-      },
-      {
-        "id": "0374127f-9fd8-4171-918d-c73855c18d59",
-        "platform": "google_play",
-        "date": "2026-07-31T08:00:50",
-        "rating": 4,
-        "content": "good app",
-        "version": "18.14.0"
-      },
-      {
-        "id": "917c1c94-b43c-42eb-bc5c-3c96b95b7d80",
-        "platform": "google_play",
-        "date": "2026-07-31T07:56:23",
-        "rating": 5,
-        "content": "good 👍",
-        "version": "18.14.0"
-      },
-      {
-        "id": "0d8b0fcb-6e4f-4fa4-b710-7b078b8edee2",
-        "platform": "google_play",
-        "date": "2026-07-31T07:46:10",
-        "rating": 5,
-        "content": "great",
-        "version": "18.12.1"
-      },
-      {
-        "id": "19bf51d2-6fab-438d-945f-6c3558a27c93",
-        "platform": "google_play",
-        "date": "2026-07-31T07:41:01",
-        "rating": 5,
-        "content": "awesome 👍",
-        "version": "18.13.2"
-      },
-      {
-        "id": "bc554f47-07c6-47d8-b6ba-c8a78462cb08",
-        "platform": "google_play",
-        "date": "2026-07-31T07:22:36",
-        "rating": 5,
-        "content": "😊 good",
-        "version": "18.13.2"
-      },
-      {
-        "id": "f2fe4d16-2293-420c-9431-fbebe8065a61",
-        "platform": "google_play",
-        "date": "2026-07-31T07:22:12",
-        "rating": 5,
-        "content": "I am happy",
-        "version": "18.13.2"
-      },
-      {
-        "id": "2ab69d8d-5402-4c5e-95f6-61ecf3b6e767",
-        "platform": "google_play",
-        "date": "2026-07-31T06:49:55",
-        "rating": 1,
-        "content": "every good experience",
-        "version": "18.11.1"
-      },
-      {
-        "id": "6350e5f6-e956-4163-b204-1b2719f3611f",
-        "platform": "google_play",
-        "date": "2026-07-31T06:49:41",
-        "rating": 5,
-        "content": "super duper app",
-        "version": "18.13.2"
-      },
-      {
-        "id": "8202c8ce-82a2-41b7-a02e-b7297ff02d82",
-        "platform": "google_play",
-        "date": "2026-07-31T06:45:36",
-        "rating": 5,
-        "content": "verry good",
-        "version": "18.13.2"
-      },
-      {
-        "id": "850bcb90-45d7-4902-9da3-f24714633e20",
-        "platform": "google_play",
-        "date": "2026-07-31T05:56:05",
-        "rating": 5,
-        "content": "bery good aap",
-        "version": "18.14.0"
-      },
-      {
-        "id": "8d32dcaa-0df4-498d-82e8-ce5724acd230",
-        "platform": "google_play",
-        "date": "2026-07-31T05:29:58",
-        "rating": 5,
-        "content": "good sarvice",
-        "version": "18.13.2"
-      },
-      {
-        "id": "54374391-a6c6-4b95-8eb2-ea2c020a7d89",
-        "platform": "google_play",
-        "date": "2026-07-31T05:26:16",
-        "rating": 5,
-        "content": "nice app fast moment groww app best he.",
-        "version": "18.14.0"
-      },
-      {
-        "id": "443c77b8-c355-454d-9255-8b4b1e275dec",
-        "platform": "google_play",
-        "date": "2026-07-31T05:00:59",
-        "rating": 5,
-        "content": "This App Really Good But The Main Problem is Brokrage If You Think That You Profit Can Solve The Problem So You Are Very Wrong Please Keep Yur Mind Calm And Think You Manage App Thats Really Charge High Brokrage",
-        "version": "18.13.2"
-      },
-      {
-        "id": "270f4681-d75b-4bfd-a1db-95b62e226109",
-        "platform": "google_play",
-        "date": "2026-07-31T04:46:38",
-        "rating": 4,
-        "content": "it's good for beginner's",
-        "version": "18.13.2"
-      },
-      {
-        "id": "89d2dc8c-99ed-4bfd-bbef-d36c43a866dc",
-        "platform": "google_play",
-        "date": "2026-07-31T04:43:59",
-        "rating": 5,
-        "content": "best application for mutual funds and stocks",
-        "version": "18.14.0"
-      },
-      {
-        "id": "3cfe2c83-d166-4cf5-85a7-e69813d8b783",
-        "platform": "google_play",
-        "date": "2026-07-31T04:31:38",
-        "rating": 5,
-        "content": "excellent",
         "version": "18.13.2"
       }
     ]
